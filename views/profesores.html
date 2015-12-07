@@ -1,0 +1,46 @@
+<div id="profesores" ng-controller="profesores">
+	<h2>Profesores</h2>
+	<div>
+		<div class="instrucciones">
+			<div ng-show="!add1 && !edit1">A continuación se muestra una lista de todos los profesores registrados en el sistema. Para dar de alta, de clic en 'Añadir profesor' en la parte superior de la lista. Para editar o borrar un profesor, primero seleccionar un profesor de la lista y dar clic en 'Editar profesor' o 'Borrar profesor' en la parte superior de la lista.</div>
+			<div ng-show="add1">Para dar de alta un nuevo profesor en el sistema favor de llenar todos los campos que se muestran a continuación sin faltar ninguno. Para su comodidad el sistema genera una contraseña aleatoriamente pero usted puede modificarla si así lo desea. Esta contraseña es con la que el profesor accessara al sistema, por lo que no olvide compartirsela una vez que la defina.</div>
+			<div ng-show="!add1 && edit1">Para editar la información de un profesor, modifique los datos en los campos siguientes. La nómina no se puede modificar, por lo que si desea modificarla tendra que borrar el registro y hacerlo otra vez. No olvide guardar los cambios con el boton aceptar una vez concluya las modificaciones.</div>
+		</div>
+		<div class="admin_control">
+			<div class="panel_list">
+				<div class="buttons_list">
+					<button class="btn_add" alt="Añadir profesor" title="Añadir profesor" ng-click="edit1 = !edit1; add1 = !add1; addelem1()" ng-disabled="edit1">+</button>
+					<button class="btn_edi" alt="Editar profesor" title="Editar profesor" ng-disabled="!modeloLista1 || edit1" ng-click="edit1 = !edit1"><img src="/img/edit.png"></button>
+					<button class="btn_del" alt="Borrar profesor" title="Borrar profesor" ng-disabled="!modeloLista1 || edit1" ng-click="delelem1()">x</button>
+				</div>
+				<div class="list">
+					<select id="lista1" size="15" ng-model="modeloLista1" ng-options="(item.pro_nombre + ' ' + item.pro_apellido_paterno + ' ' + item.pro_apellido_materno) for item in lista1 track by item.pro_nomina" ng-disabled="edit1">
+						<option value=""></option>
+					</select>
+				</div>
+				<button id="toLoad">Examinar...</button>
+				<div class="nombre_archivo"><b>Archivo seleccionado:</b> <span></span></div>
+				<input path="/masiveprofesor" id="file" type="file" file-reader="fileReader">
+				<button file-Reader-Btn="fileReaderBtn" path="/profesores" title="Subir archivo" alt="Subir archivo" ng-disabled="fileOn == undefined || fileOn == ''">Subir archivo</button>
+			</div>
+			<form ng-submit="form1()" ng-disabled="!edit1">
+				<div class="details">
+					<p>Nómina:</p><input type="text" ng-model="modeloLista1.pro_nomina" ng-readonly="!add1" ng-disabled="!add1" required>
+					<p>Nombre:</p><input type="text" ng-model="modeloLista1.pro_nombre" ng-readonly="!edit1" required>
+					<p>Apellido Paterno:</p><input type="text" ng-model="modeloLista1.pro_apellido_paterno" ng-readonly="!edit1" required>
+					<p>Apellido Materno:</p><input type="text" ng-model="modeloLista1.pro_apellido_materno" ng-readonly="!edit1" required>
+					<p>Contraseña:</p><input type="text" ng-model="modeloLista1.pro_password" ng-readonly="!edit1" required>
+					<p>Tipo de usuario:</p>
+					<select class="sublistaDetalle" ng-model="modeloLista1.pro_rol" ng-disabled="!edit1" required>
+						<option value=""></option>
+						<option value="Administrador">Administrador</option>
+						<option value="Titular">Titular</option>
+						<option value="Profesor">Profesor</option>
+					</select>
+					<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1"><img src="/img/accept.png"></button>
+					<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit1" ng-click="cancel1()"><img src="/img/cancel.png"></button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

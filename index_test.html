@@ -1,0 +1,29 @@
+<html ng-app="myApp">
+<head>
+  <title>Hello World in AngularJS</title>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
+</head>
+<body>
+
+<div>
+    <a href="/">Home</a> | 
+    <a href="/another">another</a> | 
+    <a href="/tags/1">tags/1</a>
+</div>
+<div ng-view></div>
+
+<script type="text/javascript">
+var myApp = angular.module('myApp',[]);
+
+myApp.config(function($locationProvider, $routeProvider) {
+  $locationProvider.html5Mode(true);
+  $routeProvider
+    .when('/', {
+      templateUrl: '/views/login.html', 
+      /*controller: 'ctrl1'*/
+    })
+    .otherwise({ redirectTo: '/' });
+});
+</script>
+</body>
+</html>
