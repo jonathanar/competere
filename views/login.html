@@ -1,78 +1,77 @@
-<div id="perfilexperto" ng-controller="perfilexperto">
-	<h2>Perfil experto</h2>
+<div id="actividades" ng-controller="actividades">
+	<h2>Actividades</h2>
 	<div>
 		<div class="instrucciones">
 			<div ng-show="!add1 && !edit">A continuación se muestra una lista de todos los alumnos registrados en el sistema. Para dar de alta, de clic en 'Añadir alumno' en la parte superior de la lista. Para editar o borrar un alumno, primero seleccionar un alumno de la lista y dar clic en 'Editar alumno' o 'Borrar alumno' en la parte superior de la lista.</div>
 		</div>
 		<div class="panel_inline">
 			<div class="details">
-				<b  ng-disabled="!update">Programa</b>
-				<select class="sublistaDetalle" ng-model="program_selected" ng-options="item.value as item.text for item in program" ng-change="update1()" ng-disabled="!update">
+				<b  ng-disabled="edit1">Programa</b>
+				<select class="sublistaDetalle" ng-model="program_selected" ng-options="item.value as item.text for item in program" ng-change="update1()" ng-disabled="edit1">
 					<option value=""></option>
 				</select>
-				<b  ng-disabled="!update">Periodo</b>
-				<select class="sublistaDetalle" ng-model="period_selected" ng-options="item.value as item.text for item in period" ng-change="update1()" ng-disabled="!update">
+				<b  ng-disabled="edit1">Periodo</b>
+				<select class="sublistaDetalle" ng-model="period_selected" ng-options="item.value as item.text for item in period" ng-change="update1()" ng-disabled="edit1">
 					<option value=""></option>
 				</select>
-				<b  ng-disabled="!update">Año</b>
-				<select class="sublistaDetalle" ng-model="year_selected" ng-options="('Y'+item) as item for item in year" ng-change="update1()" ng-disabled="!update">
+				<b  ng-disabled="edit1">Año</b>
+				<select class="sublistaDetalle" ng-model="year_selected" ng-options="('Y'+item) as item for item in year" ng-change="update1()" ng-disabled="edit1">
 					<option value=""></option>
 				</select>
-				<b ng-disabled="!lista1 || !update">Materia</b>
-				<select id="lista1" ng-model="modeloLista1" ng-options="(addSpaces(item.mat_clave_materia) + item.mat_nombre_materia) for item in lista1 track by item.mat_clave_materia" ng-change="update2()" ng-disabled="!lista1 || !update">
+				<b ng-disabled="!lista1 || edit1">Materia</b>
+				<select id="lista1" ng-model="modeloLista1" ng-options="(addSpaces(item.mat_clave_materia) + item.mat_nombre_materia) for item in lista1 track by item.mat_clave_materia" ng-change="update2()" ng-disabled="!lista1 || edit1">
 					<option value=""></option>
 				</select>
 			</div>
 		</div>
-		<form ng-submit="form1()" ng-disabled="!modeloLista1">
-			<div class="panel_inline">
-				<div class="admin_control">
-					<div class="panel_list">
-						<b>Listado de subcompetencias</b>			
-						<div class="list">
-							<select id="lista2" size="15" ng-model="modeloLista2" ng-options="(addSpaces(item.sco_clave_subcompetencia) + item.sco_descripcion_subcompetencia) for item in lista2 track by item.sco_clave_subcompetencia" ng-disabled="!modeloLista1">
-								<option value=""></option>
-							</select>
-						</div>
-						<div class="top_margen">
-							<b>Filtrar por taxonomias</b>
-							<label class="taxos" ng-repeat="taxonomia in lista3">
-								<input type="checkbox" ng-model="selected[taxonomia]" ng-init="selected[taxonomia]=true" value={{taxonomia}} ng-change="update3(lista3)" ng-init="checked=true" ng-disabled="!modeloLista1"> {{taxonomia}}
-							</label><!-- ng-disabled="!modeloLista1" -->
-						</div>
+		<div class="panel_inline">
+			<div class="admin_control">
+				<div class="panel_list">
+					<b>Actvidades para este curso</b><br>
+					<div class="buttons_list">
+						<button class="btn_add" alt="Añadir profesor" title="Añadir profesor" ng-click="edit1 = !edit1; add1 = !add1; addelem1()" ng-disabled="edit1 || !modeloLista1">+</button>
+						<button class="btn_edi" alt="Editar profesor" title="Editar profesor" ng-disabled="!modeloLista2 || edit1" ng-click="edit1 = !edit1"><img src="/img/edit.png"></button>
+						<button class="btn_del" alt="Borrar profesor" title="Borrar profesor" ng-disabled="!modeloLista2 || edit1" ng-click="delelem1()">x</button>
 					</div>
-					<div class="button_panel">
-						<button type="button" title="Remover materia a periodo" alt="Remover materia a periodo" ng-disabled="!modeloLista4" ng-click="delSubject1()"><img src="/img/arrow_left.png" ng-disabled="!modeloLista1"></button>
-						<button type="button" title="Agregar materia a periodo" alt="Agregar materia a periodo" ng-disabled="!modeloLista2" ng-click="addSubject1()"><img src="/img/arrow_right.png" ng-disabled="!modeloLista2"></button>
+					<div class="list">
+						<select id="lista2" size="15" ng-model="modeloLista2" ng-options="item as item.act_nombre for item in lista2 track by item.act_clave_actividad" ng-disabled="!modeloLista1">
+							<option value=""></option>
+						</select>
 					</div>
-					<div class="panel_list">
-						<b>Subcompetencias asignadas al curso</b>			
-						<div class="list">
-							<select id="lista4" size="15" ng-model="modeloLista4" ng-options="(addSpaces(item.sco_clave_subcompetencia) + item.sco_descripcion_subcompetencia) for item in lista4 track by item.sco_clave_subcompetencia" ng-change="update4()" ng-disabled="!modeloLista1">
-								<option value=""></option>
-							</select>
-						</div>
-						<div class="top_margen">
-							<table class="tab_niv" ng-show="lista5">
-								<tr>
-									<td><b>Nivel maximo</b></td>
-									<td><b>Nivel</b></td>
-									<td><b>Descripción</b></td>
-								</tr>
-								<tr ng-repeat="nivel in lista5">
-									<td><p align="center"><input type="radio" ng-model="$parent.niv_max" value={{nivel.niv_nivel}} ng-change="update5()"></p></td>
-									<td><p align="center">{{nivel.niv_nivel}}</p></td>
-									<td>{{nivel.niv_descripcion}}</td>
-								</tr>
-							</table>
-						</div>
+				</div>
+				<form ng-submit="form1()" ng-disabled="!edit1">
+					<div class="details">
+						<p>Nombre:</p><input type="text" ng-model="modeloLista2.act_nombre" ng-readonly="!edit1" required>
+					</div>
+					<div class="panel_inline">
+						<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1"><img src="/img/accept.png"></button>
+						<button type="button" title="Cancelar" alt="Cancelar" ng-click="cancel1()" ng-disabled="!edit1"><img src="/img/cancel.png"></button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="panel_inline">
+			<div class="admin_control">
+				<div class="panel_list">
+					<b>Rubricas para esta actividad</b><br>
+					<div class="top_margen">
+						<table class="tab_niv" ng-show="lista3">
+							<tr>
+								<td><b>Nivel maximo</b></td>
+								<td><b>Nivel</b></td>
+								<td><b>Descripción</b></td>
+							</tr>
+							<tr ng-repeat="nivel in lista5">
+								<td><p align="center"><input type="radio" ng-model="$parent.niv_max" value={{nivel.niv_nivel}} ng-change="update5()"></p></td>
+								<td><p align="center">{{nivel.niv_nivel}}</p></td>
+								<td>{{nivel.niv_descripcion}}</td>
+							</tr>
+						</table>
 					</div>
 				</div>
 			</div>
-			<div class="panel_inline">
-				<button title="Guardar cambios" alt="Guardar cambios"><img src="/img/accept.png"></button>
-				<button type="button" title="Cancelar" alt="Cancelar" ng-click="cancel1()"><img src="/img/cancel.png"></button>
-			</div>
-		</form>
+		</div>
+
 	</div>
 </div>

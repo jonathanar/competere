@@ -21,6 +21,14 @@ connection = mysql.createConnection({
 	database: 'competere'
 });
 
+/*connection = mysql.createConnection({
+	host: '66.147.244.56',
+	user: 'carosblu_jonas',
+	password: 'jonas123',
+	database: 'carosblu_competere',
+	port: 3306
+});*/
+
 app.set('port', 3000);
 
 
@@ -134,6 +142,13 @@ app.get('/materias', function (req, res, next) {
 app.get('/permatprofalu', function (req, res, next) {
 	if(whoIs == 'Administrador'){
 		route = '/views/permatprofalu.html';
+		next();
+	}
+});
+
+app.get('/perfexp', function (req, res, next) {
+	if(whoIs == 'Administrador'){
+		route = '/views/perfil_experto.html';
 		next();
 	}
 });
@@ -317,9 +332,50 @@ app.get('/getmaxprofiles', function (req, res){
 	});
 });
 
+app.get('/getactivities', function (req, res){
+	cla = req.query.clave;
+	connection.query('SELECT * FROM actividades WHERE act_clave_materia_periodo = ?', [cla], function (err, rows){
+		if(!err && rows.length != 0){
+			res.send(rows);
+		}else{
+			res.end();
+		}
+	});
+});
 
+app.get('/updateactivity', function (req, res){
+	cla = req.query.clave;
+	nac = req.query.nombre;
+	trans = req.query.type_trans;
+	if(trans == "true"){
+		connection.query('SELECT * FROM actividades WHERE act_clave_materia_periodo = ? AND act_nombre = ?', [cla, nac], function (err, rows){
+			if(!err && rows.length == 0){
+				connection.query('INSERT INTO actividades VALUES(?, ?, ?)', [null, nac, cla]);
+			}
+			data = ['Actividad dada de alta exitosamente'];
+			res.send(data);
+		});
+	}else{
+		connection.query('UPDATE actividades SET act_nombre = ?', [nac]);
+		data = ['Actividad actualizada exitosamente'];
+		res.send(data);
+	}
+});
 
-
+app.get('/delactivity', function (req, res){
+	act = JSON.parse(req.query.actividad);
+	cla = act.act_clave_actividad;
+	nom = act.act_nombre;
+	cmp = act.act_clave_materia_periodo;
+	connection.query('DELETE FROM actividades WHERE act_clave_actividad = ? AND act_nombre = ? AND act_clave_materia_periodo = ?', [cla, nom, cmp], function (err){
+		if(err){
+			res.send(err);
+		}else{
+			data = ['Registro borrado exitosamente'];
+			res.send(data);
+		}
+	});
+});
 
 
 

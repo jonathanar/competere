@@ -683,12 +683,6 @@ myApp.controller('materias', ['$scope', '$http', 'getUrl', 'modalConfirm', funct
 }]);
 /*   TERMINA CONTROLADOR DE MATERIAS   */
 
-
-
-
-
-
-
 /*   INICIA CONTROLADOR DE PERIODOS Y MATERIAS   */
 myApp.controller('matprofalu', ['$scope', '$http', 'getUrl', 'modalConfirm', function ($scope, $http, getUrl, modalConfirm){
   lista6 = {items:[]};
@@ -880,20 +874,6 @@ myApp.controller('matprofalu', ['$scope', '$http', 'getUrl', 'modalConfirm', fun
 }]);
 /*   TERMINA CONTROLADOR DE PERIODOS Y MATERIAS   */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*   INICIA CONTROLADOR DE PERFIL EXPERTO   */
 myApp.controller('perfilexperto', ['$scope', '$http', 'getUrl', 'modalConfirm', function ($scope, $http, getUrl, modalConfirm){  
   $scope.update = true;
@@ -940,34 +920,41 @@ myApp.controller('perfilexperto', ['$scope', '$http', 'getUrl', 'modalConfirm', 
     }
   }
   $scope.update2 = function(){
-    period = $scope.program_selected + "." + $scope.period_selected + "." + $scope.year_selected;
-    $http({
-      url: '/getclaperiod',
-      method: 'GET',
-      params: {periodo: period, cla_mat: $scope.modeloLista1.mat_clave_materia}
-    })
-    .success(function(data){
-      cla_per = data;
+    if($scope.modeloLista1 != null){
+      period = $scope.program_selected + "." + $scope.period_selected + "." + $scope.year_selected;
       $http({
-        url: '/getmaxprofiles',
+        url: '/getclaperiod',
         method: 'GET',
-        params: {clave: cla_per}
+        params: {periodo: period, cla_mat: $scope.modeloLista1.mat_clave_materia}
       })
       .success(function(data){
-        if(data.length){
-          for(i=0;i<data.length;i++){
-            for(j=0;j<$scope.lista2.length;j++){
-              if(data[i].pem_clave_subcompetencia === $scope.lista2[j].sco_clave_subcompetencia){
-                $scope.lista4.push($scope.lista2[j]);
-                $scope.lista4[$scope.lista4.length-1]['pem_nivel_requerido'] = data[i].pem_nivel_requerido;
-                $scope.lista2.splice(j,1);
-                j++;
+        cla_per = data;
+        $http({
+          url: '/getmaxprofiles',
+          method: 'GET',
+          params: {clave: cla_per}
+        })
+        .success(function(data){
+          if(data.length){
+            for(i=0;i<data.length;i++){
+              for(j=0;j<$scope.lista2.length;j++){
+                if(data[i].pem_clave_subcompetencia === $scope.lista2[j].sco_clave_subcompetencia){
+                  $scope.lista4.push($scope.lista2[j]);
+                  $scope.lista4[$scope.lista4.length-1]['pem_nivel_requerido'] = data[i].pem_nivel_requerido;
+                  $scope.lista2.splice(j,1);
+                  j++;
+                }
               }
             }
           }
-        }
+        });
       });
-    });
+    }else{
+      while($scope.lista4.length){
+        $scope.lista4.splice(0, 1);
+      }
+      $scope.refreshView();
+    }
   }
   $scope.update3 = function(data){
     arr = [];
@@ -1073,6 +1060,11 @@ myApp.controller('perfilexperto', ['$scope', '$http', 'getUrl', 'modalConfirm', 
       }
     });
   }
+  $scope.cancel1 = function(){
+    $scope.update = true;
+    delete $scope.modeloLista1;
+    $scope.update2();
+  }
   $scope.addSpaces = function(str){
     if(str){
       str1 = str.toString();
@@ -1086,6 +1078,176 @@ myApp.controller('perfilexperto', ['$scope', '$http', 'getUrl', 'modalConfirm', 
   $scope.refreshView();
 }]);
 /*   TERMINA CONTROLADOR DE PERFIL EXPERTO   */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*   INICIA CONTROLADOR DE PERFIL EXPERTO   */
+myApp.controller('actividades', ['$scope', '$http', 'getUrl', 'modalConfirm', function ($scope, $http, getUrl, modalConfirm){
+  $scope.update = true;
+  $scope.program = [ {"value": "P1", "text": "Preparatoria"}, {"value": "P2", "text": "Profesional"}, {"value": "P3", "text": "PGIT"}, {"value": "P4", "text": "PGADE"}, {"value": "P5", "text": "GMBA"}, {"value": "P6", "text": "EGEHCS"} ];
+  $scope.period = [ {"value": "E11", "text": "Enero semestral"}, {"value": "E13", "text": "Agosto semestral"}, {"value": "E12", "text": "Verano semestral"}, {"value": "E21", "text": "Enero trimestral"}, {"value": "E22", "text": "Abril trimestral"}, {"value": "E23", "text": "Verano trimestral"}, {"value": "E24", "text":"Septiembre trimestral" } ];
+  $scope.year = [];
+  period = "";
+  cla_per = "";
+  d = new Date();
+  y = d.getFullYear();
+  for(i=2015;i<=y+4;i++){
+    $scope.year.push(i);
+  }
+  $scope.refreshView = function(){
+    
+  }
+  $scope.addelem1 = function(){
+    $scope.modeloLista2 = {};
+  }
+  $scope.delelem1 = function(){
+    data = ['Segur@ que desea borrar el registro'];
+    modalConfirm.conf($scope.giveScope(), data, true).then(function(response){
+      if(response){
+        $http({
+          url: '/delactivity',
+          method: 'GET',
+          params: {actividad: $scope.modeloLista2}
+        })
+        .success(function(data){
+          modalConfirm.conf($scope.giveScope(), data, false).then(function(){
+            $scope.update2();
+          });
+        });
+      }
+    });
+  }
+  $scope.update1 = function(){
+    if(!$scope.program_selected || !$scope.period_selected || !$scope.year_selected){
+      delete $scope.lista1;
+    }
+    if($scope.program_selected && $scope.period_selected && $scope.year_selected){
+      $http({
+        url: '/allsubjectperiod',
+        method: 'GET',
+        params: {program: $scope.program_selected, period: $scope.period_selected, year: $scope.year_selected}
+      })
+      .success(function(data){
+        if(data.length){
+          $scope.lista1 = [];
+          for(i=0;i<data.length;i++){
+            $scope.lista1.push(data[i]);
+          }
+        }else{
+          delete $scope.lista1;
+        }
+      });
+    }
+  }
+  $scope.update2 = function(){
+    if($scope.modeloLista1 != null){
+      period = $scope.program_selected + "." + $scope.period_selected + "." + $scope.year_selected;
+      $http({
+        url: '/getclaperiod',
+        method: 'GET',
+        params: {periodo: period, cla_mat: $scope.modeloLista1.mat_clave_materia}
+      })
+      .success(function(data){
+        cla_per = data;
+        $http({
+          url: '/getactivities',
+          method: 'GET',
+          params: {clave: cla_per}
+        })
+        .success(function(data){
+          if(data.length){
+            $scope.lista2 = data;
+          }
+          /*if(data.length){
+            for(i=0;i<data.length;i++){
+              for(j=0;j<$scope.lista2.length;j++){
+                if(data[i].pem_clave_subcompetencia === $scope.lista2[j].sco_clave_subcompetencia){
+                  $scope.lista4.push($scope.lista2[j]);
+                  $scope.lista4[$scope.lista4.length-1]['pem_nivel_requerido'] = data[i].pem_nivel_requerido;
+                  $scope.lista2.splice(j,1);
+                  j++;
+                }
+              }
+            }
+          }*/
+        });
+      });
+    }/*else{
+      while($scope.lista4.length){
+        $scope.lista4.splice(0, 1);
+      }
+      $scope.refreshView();
+    }*/
+  }
+  $scope.cancel1 = function(){
+    data = ['Segur@ que no desea guardar cambios?'];
+    modalConfirm.conf($scope.giveScope(), data, true).then(function(response){
+      if(response){
+        $scope.edit1 = !$scope.edit1;
+        $scope.add1 = false;
+        $scope.modeloLista2 = null;
+      }
+    });
+  }
+  $scope.form1 = function(){
+    add = false;
+    if($scope.add1 && $scope.edit1){
+      add = true;
+    }else{
+      add = false;
+    }
+    $http({
+      url: '/updateactivity',
+      method: 'GET',
+      params: {clave: cla_per, nombre: $scope.modeloLista2.act_nombre, type_trans: add}
+    })
+    .success(function(data){
+      modalConfirm.conf($scope.giveScope(), data, false).then(function(){
+        $scope.edit1 = !$scope.edit1;
+        $scope.add1 = false;
+        $scope.update2();
+      });
+    });
+  }
+  $scope.addSpaces = function(str){
+    if(str){
+      str1 = str.toString();
+      rest = 11 - str1.length;
+      for(i=0;i<rest;i++){
+        str1 = str1 + String.fromCharCode(8194);
+      }
+      return str1;
+    }
+  }
+  $scope.refreshView();
+}]);
+/*   TERMINA CONTROLADOR DE PERFIL EXPERTO   */
+
+
+
+
+
+
+
 
 
 

@@ -164,7 +164,10 @@ html, body {
 	background-color: #00349a;
 }
 #menu_admin > section:nth-child(7) {
-	background-color: #31bd2c;
+	background-color: #b30000;
+}
+#menu_admin > section:nth-child(8) {
+    background-color: #31bd2c;
 }
 #menu_admin > section > div {
     display: table;
@@ -213,6 +216,9 @@ html, body {
 }
 #perfilexperto > h2 {
     background-color: #00349a;
+}
+#actividades > h2 {
+    background-color: #b30000;
 }
 .details table {
     border-collapse: collapse;
