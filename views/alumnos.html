@@ -1,0 +1,41 @@
+<div id="alumnos" ng-controller="alumnos">
+	<h2>Alumnos</h2>
+	<div>
+		<div class="instrucciones">
+			<div ng-show="!add1 && !edit">A continuación se muestra una lista de todos los alumnos registrados en el sistema. Para dar de alta, de clic en 'Añadir alumno' en la parte superior de la lista. Para editar o borrar un alumno, primero seleccionar un alumno de la lista y dar clic en 'Editar alumno' o 'Borrar alumno' en la parte superior de la lista.</div>
+		</div>
+		<div class="admin_control">
+			<div class="panel_list">
+				<div class="buttons_list"><button class="btn_add" alt="Añadir alumno" title="Añadir alumno" ng-click="edit1 = !edit1; add1 = !add1; addelem1()" ng-disabled="edit1">+</button><button class="btn_edi" alt="Editar alumno" title="Editar alumno" ng-disabled="!modeloLista1 || edit1" ng-click="edit1 = !edit1"><img src="/img/edit.png"></button><button class="btn_del" alt="Borrar alumno" title="Borrar alumno" ng-disabled="!modeloLista1 || edit1" ng-click="delelem1()">x</button></div>
+				<div class="list">
+					<select id="lista1" size="15" ng-model="modeloLista1" ng-options="(item.alu_matricula + ' ' + item.alu_nombre + ' ' + item.alu_apellido_paterno + ' ' + item.alu_apellido_materno) for item in lista1 track by item.alu_matricula" ng-disabled="edit1">
+						<option value=""></option>
+					</select>
+				</div>
+				<button id="toLoad">Examinar...</button>
+				<div class="nombre_archivo"><b>Archivo seleccionado:</b> <span></span></div>
+				<input path="/masivestudent" id="file" type="file" file-reader="fileReader">
+				<button file-Reader-Btn="fileReaderBtn" path="/student" title="Subir archivo" alt="Subir archivo" ng-disabled="fileOn == undefined || fileOn == ''">Subir archivo</button>
+			</div>
+			<form ng-submit="form1()" ng-disabled="!edit1">
+				<div class="details">
+					<p>Matrícula:</p><input type="text" ng-model="modeloLista1.alu_matricula" ng-readonly="!add1" ng-disabled="!add1" maxlength="9" required>
+					<p>Nombre:</p><input type="text" ng-model="modeloLista1.alu_nombre" ng-readonly="!edit1" required>
+					<p>Apellido Paterno:</p><input type="text" ng-model="modeloLista1.alu_apellido_paterno" ng-readonly="!edit1" required>
+					<p>Apellido Materno:</p><input type="text" ng-model="modeloLista1.alu_apellido_materno" ng-readonly="!edit1" required>
+					<p>Contraseña:</p><input type="text" ng-model="modeloLista1.alu_password" ng-readonly="!edit1" required>
+					<p>Nivel académico:</p>
+					<select class="sublistaDetalle" ng-model="modeloLista1.alu_nivel_academico" ng-disabled="!edit1" required>
+						<option value=""></option>
+						<option value="Doctorado">Doctorado</option>
+						<option value="Maestría">Maestría</option>
+						<option value="Profesional">Profesional</option>
+						<option value="Preparatoria">Preparatoria</option>
+					</select>
+					<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1"><img src="/img/accept.png"></button>
+					<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit1" ng-click="cancel1()"><img src="/img/cancel.png"></button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
