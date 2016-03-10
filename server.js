@@ -14,31 +14,41 @@ whoIsName = '';
 app = express();
 app.set('jwtTokenSecret', 'CompitereKeyForRuleThemAll');
 
-db_config = {
+/*db_config = {
 	host: 'localhost',
+	database: 'competere',
 	user: 'root',
-	password: '',
+	password: ''
+	
+};*/
+
+
+/*db_config = {
+	host: '66.147.244.56',
+	user: 'carosblu_jonas',
+	password: 'jona123',
+	database: 'carosblu_competere',
+	port: 3306
+};*/
+
+
+db_config = {
+	host: '23.229.173.41',
+	user: 'competereuser',
+	password: 'competerepass123',
 	database: 'competere'
+	/*port: 3306*/
 };
 
 
-/* BORRAR */
-connection = mysql.createConnection(db_config);
+var connection;
 
-/*connection = mysql.createConnection({
-	host: '66.147.244.56',
-	user: 'carosblu_jonas',
-	password: 'jonas123',
-	database: 'carosblu_competere',
-	port: 3306
-});*/
-
-/*var connection;
-
-function handleConnection() {
+/*function handleConnection() {
 	connection = mysql.createConnection(db_config);
+	console.log("exec1");
 
 	connection.connect(function(err){
+		console.log("exec2");
 		if(err){
 			console.log('db error ', err);
 			setTimeout(handleConnection, 5000);
@@ -46,6 +56,7 @@ function handleConnection() {
 	});
 
 	connection.on('error', function(err){
+		console.log("exec3");
 		if(err.code === 'PROTOCOL_CONNECTION_LOST'){
 			handleConnection();
 		}else{
@@ -55,6 +66,13 @@ function handleConnection() {
 }*/
 
 
+function handleConnection() {
+	connection = mysql.createConnection(db_config);
+	console.log("conexion establecida");
+
+}
+
+/*handleConnection();*/
 
 app.set('port', 3000);
 
@@ -74,6 +92,11 @@ app.use(express.static(__dirname + '/'));
 app.use('/styles', express.static(__dirname + '/css'));
 app.use('/scripts', express.static(__dirname + '/js'));
 app.use('/img', express.static(__dirname + '/img'));
+app.use('/files', express.static(__dirname + '/resources'));
+app.use(function (req, res, next){
+	handleConnection();
+	next();
+});
 
 
 http.createServer(app).listen(app.get('port'), function(){
@@ -94,7 +117,7 @@ app.use(function (req, res, next){
 	route = '';
 	whoIsName = '';
 	token = req.headers.authorization;
-	if(req.path == '/' || req.path == '/login' || req.path == '/logview'){
+	if(req.path === '/' || req.path === '/login' || req.path === '/logview'){
 		if(autenticate(token)){
 			newTok = extendTime(token);
 			whoAreYou(token);
@@ -108,13 +131,14 @@ app.use(function (req, res, next){
 		if(autenticate(token)){
 			newTok = extendTime(token);
 			whoIs = whoAreYou(newTok);
-
-			whoAreYouName(newTok, function(name){
+			whoAreYouName(newTok, function(name, user){
 				whoIsName = name;
+				whoIsId = user;
 				next();
-			});			
+			});	
 		}else{
 			whoIsName = '';
+			whoIsId = '';
 			res.sendFile(__dirname + '/views/outlogin.html');		
 		}
 	}
@@ -191,13 +215,24 @@ app.get('/perfexp', function (req, res, next) {
 app.get('/actividades', function (req, res, next) {
 	if(whoIs == 'Administrador'){
 		route = '/views/actividades.html';
-		next();
 	}
+	if(whoIs == 'Titular'){
+		route = '/views/actividades_ti.html';
+	}
+	next();
 });
 
 app.get('/evaluaciones', function (req, res, next) {
 	if(whoIs == 'Administrador'){
 		route = '/views/evaluaciones.html';
+		next();
+	}
+	if(whoIs == 'Profesor'){
+		route = '/views/evaluaciones_pf.html';
+		next();
+	}
+	if(whoIs == 'Titular'){
+		route = '/views/evaluaciones_ti.html';
 		next();
 	}
 });
@@ -211,17 +246,17 @@ app.get('/reportes', function (req, res, next) {
 
 //Pantalla Menu con autenticacion
 app.get('/menu', function (req, res, next){
-	switch(whoIs){
-		case 'Estudiante':
-			route = '/views/menu_estud.html';
-		case 'Profesor':
-			route = '/views/menu_profr.html';
-		case 'Titular':
-			route = '/views/menu_titul.html';
-		case 'Administrador':
-			route = '/views/menu_admin.html';
-		default:
-			whoIs = '';
+	if(whoIs === "Administrador"){
+		route = '/views/menu_admin.html';
+	}
+	if(whoIs === "Titular"){
+		route = '/views/menu_ti.html';
+	}
+	if(whoIs === "Profesor"){
+		route = '/views/evaluaciones_pf.html';
+	}
+	if(whoIs === "Estudiante"){
+		route = '/views/reportes_al.html';
 	}
 	next();
 });
@@ -233,69 +268,48 @@ app.get('*', function (req, res, next){
 	if(route != ''){
 		res.sendFile(__dirname + route);
 		route = '';
-	}else{
+	}/*else{
 		next();
-	}
+	}*/
+	next();
 });
 
-
-app.get('/login', function (req, res) {
+app.get('/login', function (req, res, next) {
 	usr = JSON.parse(req.query.user);
 	user = usr.usuario;
 	pass = usr.contrasena;
-	data = {status: 'error', text: 'Usuario no registrado, verifique bien su usuario y contraseña, si el problema persiste, contacte con el administrador!'};
-	connection.query('SELECT * FROM alumnos WHERE alu_matricula = ? AND alu_password = ? LIMIT 1', [user, pass], function (err, rows) {
-		if(!err && rows.length == 0){
-			connection.query('SELECT * FROM profesores WHERE pro_nomina = ? AND pro_password = ? LIMIT 1', [user, pass], function (err, rows) {				
-				if(!err && rows.length != 0){
-					data = {nombre: rows[0].pro_nombre + ' ' + rows[0].pro_apellido_paterno, token: giveToken(rows[0].pro_nomina, thisIsYou(rows[0].pro_rol))};
-				}
-			});
-		}else{
-			data = {nombre: rows[0].alu_nombre + ' ' + rows[0].alu_apellido_paterno, token: giveToken(rows[0].alu_matricula, thisIsYou('estudiante'))};
+	if(user == 'L01421024' && pass == 'jonaylucy13052912'){
+		data = {nombre: 'Jonathan Ayala Rodríguez', token: giveToken('L01421024', thisIsYou('Administrador'))};
+	}else{
+		data = {status: 'error', text: 'Usuario no registrado, verifique bien su usuario y contraseña, si el problema persiste, contacte con el administrador!'};
+		connection.query('SELECT * FROM alumnos WHERE BINARY alu_matricula = ? AND BINARY alu_password = ? LIMIT 1', [user, pass], function (err, rows) {
+			if(!err && rows.length == 0){
+				connection.query('SELECT * FROM profesores WHERE BINARY pro_nomina = ? AND BINARY pro_password = ? LIMIT 1', [user, pass], function (err, rows) {				
+					if(!err && rows.length != 0){
+						data = {nombre: rows[0].pro_nombre + ' ' + rows[0].pro_apellido_paterno, token: giveToken(rows[0].pro_nomina, thisIsYou(rows[0].pro_rol))};
+					}
+				});
+			}else{
+				data = {nombre: rows[0].alu_nombre + ' ' + rows[0].alu_apellido_paterno, token: giveToken(rows[0].alu_matricula, thisIsYou('Estudiante'))};
+			}
+		});
+	}
+	fs.appendFile('log.txt', 'hola\r\n', function (err){
+		if(err){
+			return console.log(err);
 		}
-	});
+		console.log("file saved");
+	});	
 	setTimeout(function(){
 		res.send(data);
-	}, 500);
+		next();
+	},1000);
 });
 
+/*   QUERY QUE OBTIENE LAS CATEGORIAS DE UN CAMPO   */
+// SELECT DISTINCT SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING(COLUMN_TYPE, 7, LENGTH(COLUMN_TYPE) - 8), "\',\'", 1 + units.i + tens.i * 10) , "\',\'", -1) FROM INFORMATION_SCHEMA.COLUMNS CROSS JOIN (SELECT 0 AS i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) units CROSS JOIN (SELECT 0 AS i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens WHERE TABLE_NAME = "subcompetencias" AND COLUMN_NAME = "sco_taxonomia"
 
-app.get('/categories', function (req, res){
-	connection.query('SELECT DISTINCT SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING(COLUMN_TYPE, 7, LENGTH(COLUMN_TYPE) - 8), "\',\'", 1 + units.i + tens.i * 10) , "\',\'", -1) FROM INFORMATION_SCHEMA.COLUMNS CROSS JOIN (SELECT 0 AS i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) units CROSS JOIN (SELECT 0 AS i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens WHERE TABLE_NAME = "subcompetencias" AND COLUMN_NAME = "sco_taxonomia"', function (err, rows){
-		if(!err && rows.length != 0){
-			elements = [];
-			for(key in rows){
-				ele = rows[key];
-				elements.push(ele['SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING(COLUMN_TYPE, 7, LENGTH(COLUMN_TYPE) - 8), "\',\'", 1 + units.i + tens.i * 10) , "\',\'", -1)']);
-			}
-			res.send(elements);
-		}
-	});
-});
-
-app.get('/allsubcompetences', function (req, res){
-	connection.query('SELECT * FROM subcompetencias', function (err, rows, fields){
-		if(err || rows.length == 0){
-			res.send({ status: 'error', text: 'No hay competencias registradas de momento!'});
-		}else{
-			res.send(rows);
-		}
-	});
-});
-
-app.get('/filtersubcompetences', function (req, res){
-	taxos = req.query.taxs;
-	connection.query('SELECT * FROM subcompetencias WHERE sco_taxonomia IN(?)', [taxos], function (err, rows){
-		if(!err && rows.length != 0){
-			res.send(rows);
-		}else{
-			res.end();
-		}
-	});
-});
-
-app.get('/getclaperiod', function (req, res){
+app.get('/getclaperiod', function (req, res, next){
 	per = req.query.periodo;
 	clm = req.query.cla_mat;
 	connection.query('SELECT mpe_clave_materia_periodo FROM materia_periodo WHERE mpe_clave_periodo = ? AND mpe_clave_materia = ? LIMIT 1', [per, clm], function (err, rows){
@@ -304,68 +318,29 @@ app.get('/getclaperiod', function (req, res){
 		}else{
 			res.end();
 		}
-	});
+		next();
+	});	
 });
 
-app.get('/updateexpertprofile', function (req, res){
-	per = req.query.periodo;
-	scs = JSON.parse(req.query.sco_claves_sub);
-	data = [];
-	subcom = [];
-	nivels = [];
-	for(i=0;i<scs.items.length;i++){
-		subcom.push(scs.items[i].sco_clave_subcompetencia);
-		nivels.push(scs.items[i].pem_nivel_requerido);
-	}
-	connection.query('DELETE FROM perfil_experto_materia_periodo WHERE pem_clave_materia_periodo = ? AND pem_clave_subcompetencia NOT IN(?)', [per, subcom], function (err){
-		if(!err){
-			for(i=0;i<subcom.length;i++){
-				(function (sub, niv){
-					connection.query('SELECT * FROM perfil_experto_materia_periodo WHERE pem_clave_materia_periodo = ? AND pem_clave_subcompetencia = ?', [per, sub], function (err, rows){
-						if(!err && rows.length == 0){
-							connection.query('INSERT INTO perfil_experto_materia_periodo VALUES(?, ?, ?)', [per, sub, niv]);
-						}else{
-							connection.query('UPDATE perfil_experto_materia_periodo SET pem_nivel_requerido = ? WHERE pem_clave_materia_periodo = ? AND pem_clave_subcompetencia = ?', [niv, per, sub]);
-						}
-
-					});
-				})(subcom[i], nivels[i]);
-			}
-			data = ['Registros actualizados exitosamente'];
-			res.send(data);
-		}
-	});
-});
-
-app.get('/getmaxprofiles', function (req, res){
+app.get('/getactivities', function (req, res, next){
 	cla = req.query.clave;
-	connection.query('SELECT * FROM perfil_experto_materia_periodo WHERE pem_clave_materia_periodo = ?', [cla], function (err, rows){
+	connection.query('SELECT * FROM actividades WHERE act_clave_materia_periodo = ?', [cla], function (err, rows, fields){
 		if(!err && rows.length != 0){
 			res.send(rows);
 		}else{
 			res.end();
 		}
-	});
+		next();
+	});	
 });
 
-app.get('/getactivities', function (req, res){
-	cla = req.query.clave;
-	connection.query('SELECT * FROM actividades WHERE act_clave_materia_periodo = ?', [cla], function (err, rows){
-		if(!err && rows.length != 0){
-			res.send(rows);
-		}else{
-			res.end();
-		}
-	});
-});
-
-app.get('/updateactivity', function (req, res){
+app.get('/updateactivity', function (req, res, next){
 	cla = req.query.clave;
 	nac = req.query.nombre;
 	trans = req.query.type_trans;
 	alumnos = [];
 	if(trans == "true"){
-		connection.query('SELECT * FROM alumno_profesor_materia_periodo WHERE apm_clave_materia_periodo = ?', [cla], function (err, rows){
+		connection.query('SELECT * FROM alumno_profesor_matper WHERE apm_clave_materia_periodo = ?', [cla], function (err, rows){
 			if(!err && rows.length != 0){
 				for(i=0;i<rows.length;i++){
 					alumnos.push(rows[i].apm_matricula_alumno);
@@ -391,9 +366,12 @@ app.get('/updateactivity', function (req, res){
 		data = ['Actividad actualizada exitosamente'];
 		res.send(data);
 	}
+	setTimeout(function(){
+		next();
+	},1000);	
 });
 
-app.get('/delactivity', function (req, res){
+app.get('/delactivity', function (req, res, next){
 	act = JSON.parse(req.query.actividad);
 	cla = act.act_clave_actividad;
 	nom = act.act_nombre;
@@ -407,10 +385,13 @@ app.get('/delactivity', function (req, res){
 			data = ['Registro borrado exitosamente'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-app.get('/getactivitylevels', function (req, res){
+/*SELECT * FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?) AND niv_clave_subcompetencia = ? UNION SELECT * FROM  niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL AND niv_nivel NOT IN (SELECT niv_nivel FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?)) ORDER BY niv_nivel*/
+
+app.get('/getactivitylevels', function (req, res, next){
 	cla = req.query.clave;
 	sco = req.query.subcom;
 	subcoms = [];
@@ -419,7 +400,7 @@ app.get('/getactivitylevels', function (req, res){
 			if(!err && rows.length != 0){
 				for(i=0;i<rows.length;i++){
 					(function (sub, nir, des){
-						connection.query('SELECT * FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?) AND niv_clave_subcompetencia = ? UNION SELECT * FROM  niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL AND niv_nivel NOT IN (SELECT niv_nivel FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?)) ORDER BY niv_nivel', [sub, sub, sub, sub, sub], function (err, rows){
+						connection.query('SELECT * FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad = ?) AND niv_clave_subcompetencia = ? UNION SELECT * FROM  niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL AND niv_nivel NOT IN (SELECT niv_nivel FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad = ?)) ORDER BY niv_nivel', [sub, cla, sub, sub, sub, sub, cla], function (err, rows){
 							if(!err && rows.length != 0){
 								subcoms.push({subcompetence: sub, level_required:nir, description: des, rows});
 							}
@@ -428,34 +409,6 @@ app.get('/getactivitylevels', function (req, res){
 				}
 			}
 		});
-		/*connection.query('SELECT DISTINCT niv_clave_subcompetencia FROM niveles WHERE niv_clave_actividad = ?', [cla], function (err, rows){
-			if(!err && rows.length != 0){
-				for(i=0;i<rows.length;i++){
-					(function (sco){
-						nivel_requerido = "";
-						connection.query('SELECT rub_nivel_requerido FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ?', [cla, sco], function (err, rows){
-							if(!err && rows.length != 0){
-								nivel_requerido = rows[0].rub_nivel_requerido;
-							}
-							(function (nre){
-								connection.query('SELECT sco_descripcion_subcompetencia FROM subcompetencias WHERE sco_clave_subcompetencia = ?', [sco], function (err, rows){
-									if(!err && rows.length != 0){
-										(function (des){
-											connection.query('SELECT * FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?) AND niv_clave_subcompetencia = ? UNION SELECT * FROM  niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL AND niv_nivel NOT IN (SELECT niv_nivel FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?)) ORDER BY niv_nivel', [sco, sco, sco, sco], function (err, rows){
-												if(!err && rows.length != 0){
-													subcoms.push({rows, description: des, nrequerido: nre});
-												}
-											});
-										})(rows[0].sco_descripcion_subcompetencia);
-									}
-								});
-							})(nivel_requerido);
-						});
-						
-					})(rows[i].niv_clave_subcompetencia);					
-				}
-			}
-		});*/
 	}
 	if(cla && sco){
 		connection.query('SELECT sco_descripcion_subcompetencia FROM subcompetencias WHERE sco_clave_subcompetencia = ?', [sco], function (err, rows){
@@ -472,96 +425,35 @@ app.get('/getactivitylevels', function (req, res){
 	}
 	setTimeout(function(){
 		res.send(subcoms);
+		next();
 	},1000);
-	
-	/*connection.query('SELECT * FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?) UNION SELECT * FROM  niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL AND niv_nivel NOT IN (SELECT niv_nivel FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?)) ORDER BY niv_nivel', [sco, sco, sco], function (err, rows){
+});
+
+app.get('/getme', function (req, res, next){
+	connection.query('SELECT * FROM alumnos WHERE alu_matricula = ? LIMIT 1', [whoIsId], function (err, rows){
 		if(!err && rows.length != 0){
 			res.send(rows);
 		}
-	});*/
-	
-	/*rubrics = {items:[]};
-	connection.query('SELECT * FROM perfil_experto_materia_periodo WHERE pem_clave_materia_periodo = ?', [cla], function (err, rows){
-		if(!err && rows.length != 0){
-			for(i=0;i<rows.length;i++){
-				(function (csu, niv){
-					connection.query('SELECT * FROM subcompetencias WHERE sco_clave_subcompetencia = ?', [csu], function (err, rows){
-						(function (sub){
-							connection.query('SELECT * FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ? LIMIT 1', [cac, sub.sco_clave_subcompetencia], function (err, rows){
-								nivel = "N/A";
-								if(!err && rows.length != 0){
-									nivel = rows[0].rub_nivel_requerido;
-								}
-								(function (nivl){
-									connection.query('SELECT * FROM niveles WHERE niv_clave_subcompetencia = ? ORDER BY niv_clave_subcompetencia, niv_nivel', [csu], function (err, rows){
-										if(!err && rows.length != 0){
-											levels = [];
-											for(j=0;j<rows.length;j++){
-												if(rows[j].niv_nivel == niv){
-													levels.push(rows[j]);
-													break;
-												}else{
-													levels.push(rows[j]);
-												}
-											}
-											rubrics.items.push({subcompetencia: sub, nivact: nivl, niveles: levels});
-										}
-									});
-								})(nivel);								
-							});
-						})(rows[0]);
-					});
-				})(rows[i].pem_clave_subcompetencia, rows[i].pem_nivel_requerido);
-			}
-			setTimeout(function(){
-				res.send(rubrics);
-			},500);			
-		}else{
-			res.end();
-		}
-	});*/
+		next();
+	});
 });
 
-app.get('/updaterubrics', function (req, res){
-	rub = JSON.parse(req.query.rubricas);
-	for(i=0;i<rub.length;i++){
-		(function (clact, clasbc, clanvr){
-			if(clanvr == "N/A"){
-				connection.query('DELETE FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ?', [clact, clasbc]);
-			}else{
-				connection.query('SELECT * FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ? LIMIT 1', [clact, clasbc], function (err, rows){
-					if(!err && rows.length == 0){
-						connection.query('INSERT INTO rubricas VALUES(?, ?, ?)', [clact, clasbc, clanvr]);
-					}else if(!err && rows.length != 0){
-						connection.query('UPDATE rubricas SET rub_nivel_requerido = ? WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ?', [clanvr, clact, clasbc]);
-					}
-				});
-			}
-			
-		})(rub[i].clact, rub[i].clasub, rub[i].clanir);
-	}
-	data = ["Informacion actualizada"];
-	res.send(data);
-});
-
-app.get('/updateactivityrubric', function (req, res){
+app.get('/updateactivityrubric', function (req, res, next){
 	aru = JSON.parse(req.query.activityrubric);
 	cla = req.query.clave;
 	subcoms = [];
-	if(aru){
+	if(cla && aru){
 		for(i=0;i<aru.length;i++){
 			subcoms.push(aru[i].subcompetence);
-			if(aru[i].level_required != ""){
-				(function (sub, nir){
-					connection.query('SELECT * FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ? LIMIT 1', [cla, sub], function(err, rows){
-						if(!err && rows.length == 0){
-							connection.query('INSERT INTO rubricas VALUES(?, ?, ?)', [cla, sub, nir]);
-						}else if(!err && rows.length != 0){
-							connection.query('UPDATE rubricas SET rub_nivel_requerido = ? WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ?', [nir, cla, sub]);
-						}
-					});
-				})(aru[i].subcompetence, aru[i].level_required);
-			}
+			(function (sub, nir){
+				connection.query('SELECT * FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ? LIMIT 1', [cla, sub], function(err, rows){
+					if(!err && rows.length == 0){
+						connection.query('INSERT INTO rubricas VALUES(?, ?, ?)', [cla, sub, nir]);
+					}else if(!err && rows.length != 0){
+						connection.query('UPDATE rubricas SET rub_nivel_requerido = ? WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ?', [nir, cla, sub]);
+					}
+				});
+			})(aru[i].subcompetence, aru[i].level_required);
 			for(j=0;j<aru[i].rows.length;j++){
 				(function (sub, des, niv){
 					connection.query('SELECT * FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_nivel = ?', [sub, niv], function (err, rows){
@@ -582,15 +474,24 @@ app.get('/updateactivityrubric', function (req, res){
 				})(aru[i].subcompetence, aru[i].rows[j].niv_descripcion, aru[i].rows[j].niv_nivel);
 			}
 		}
-		connection.query('DELETE FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia NOT IN(?)', [cla, subcoms]);
-		connection.query('DELETE FROM niveles WHERE niv_clave_actividad = ? AND niv_clave_subcompetencia NOT IN(?)', [cla, subcoms]);
 	}
-	data = ["Informacion actualizada"];
-	res.send(data);
+	setTimeout(function(){
+		res.end();
+		next();
+	},1000);
+});
+
+app.get('/deleterubric', function (req, res, next){
+	cla = req.query.clave;
+	sub = req.query.subcom;
+	connection.query('DELETE FROM rubricas WHERE rub_clave_actividad = ? AND rub_clave_subcompetencia = ?', [cla, sub]);
+	connection.query('DELETE FROM niveles WHERE niv_clave_actividad = ? AND niv_clave_subcompetencia = ?', [cla, sub]);
+	res.end();
+	next();
 });
 
 // EVALUACIONES
-app.get('/getevaluations', function (req, res){
+app.get('/getevaluations', function (req, res, next){
 	cla = req.query.clavact;
 	alu = req.query.student;
 	connection.query('SELECT * FROM evaluaciones WHERE eva_matricula_alumno = ? AND eva_clave_actividad = ? LIMIT 1', [alu, cla], function (err, rows){
@@ -599,10 +500,11 @@ app.get('/getevaluations', function (req, res){
 		}else{
 			res.end();
 		}
-	});
+		next();
+	});	
 });
 
-app.get('/updatevaluations', function (req, res){
+app.get('/updatevaluations', function (req, res, next){
 	cev = req.query.claeval;
 	cla = req.query.clavact;
 	alu = req.query.student;
@@ -624,15 +526,17 @@ app.get('/updatevaluations', function (req, res){
 	}
 	connection.query('UPDATE evaluaciones SET eva_comentario = ?, eva_feedup = ?, eva_feedback = ?, eva_feedforward = ? WHERE eva_matricula_alumno = ? AND eva_clave_actividad = ?', [com, fup, fbk, ffd, alu, cla]);
 	data = ['Retroalimentación dada de alta exitosamente'];
-	res.send(data);
+	setTimeout(function(){
+		res.send(data);
+		next();
+	});	
 });
-
 
 
 //CLAVE ORIGINAL ---------------- NO BORRAR AUN
 /*'SELECT * FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?) AND niv_clave_subcompetencia = ? UNION SELECT * FROM  niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL AND niv_nivel NOT IN (SELECT niv_nivel FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?)) ORDER BY niv_nivel'*/
 
-app.get('/getevaldetails', function (req, res){
+app.get('/getevaldetails', function (req, res, next){
 	cla = req.query.clavact;
 	eva = req.query.eval;
 	evaluation = [];
@@ -651,7 +555,7 @@ app.get('/getevaldetails', function (req, res){
 							(function (niv, com){
 								connection.query('SELECT * FROM niveles WHERE niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?) AND niv_clave_subcompetencia = ? UNION SELECT * FROM  niveles WHERE  niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL AND niv_nivel NOT IN (SELECT niv_nivel FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad IN (SELECT MIN(niv_clave_actividad) FROM niveles WHERE  niv_clave_subcompetencia = ?)) ORDER BY niv_nivel', [sub, sub, sub, sub, sub], function (err, rows){
 									if(!err && rows.length != 0){
-										evaluation.push({subcompetence: sub, level_required:nir, level_assigned: niv, comentary: com, description: des, rows});
+										evaluation.push({subcompetence: sub, level_required: nir, level_assigned: niv, comentary: com, description: des, rows});
 									}
 								});
 							})(nive, comp);
@@ -663,37 +567,18 @@ app.get('/getevaldetails', function (req, res){
 	}
 	setTimeout(function(){
 		res.send(evaluation);
+		next();
 	},1000);
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ACTIVIDADES
-app.get('/courseprofandstud', function (req, res){
+app.get('/courseprofandstud', function (req, res, next){
 	clave = req.query.clave;
 	prof = [];
 	stud = [];
 	profesores = [];
 	estudiantes = [];
 	relation = [];
-	connection.query('SELECT * FROM alumno_profesor_materia_periodo WHERE apm_clave_materia_periodo = ?', [clave], function (err, rows){
+	connection.query('SELECT * FROM alumno_profesor_matper WHERE apm_clave_materia_periodo = ?', [clave], function (err, rows){
 		if(!err && rows.length != 0){
 			relation.push(rows);
 			for(i=0;i<rows.length;i++){
@@ -715,21 +600,23 @@ app.get('/courseprofandstud', function (req, res){
 	setTimeout(function(){
 		data = {prof: profesores, stud: estudiantes, rel: relation};
 		res.send(data);
+		next();
 	},1000);
 });
 
 // PROFESOR
-app.get('/allprofesor', function (req, res){
+app.get('/allprofesor', function (req, res, next){
 	connection.query('SELECT * FROM profesores', function (err, rows, fields){
 		if(err || rows.length == 0){
 			res.send({ status: 'error', text: 'Usuario no registrado, verifique bien su usuario y contraseña, si el problema persiste, contacte con el administrador!'});
 		}else{
 			res.send(rows);
 		}
+		next();
 	});
 });
 
-app.get('/updateprofesor', function (req, res){
+app.get('/updateprofesor', function (req, res, next){
 	data = JSON.parse(req.query.profesor);
 	nomina = data.pro_nomina;
 	nombre = data.pro_nombre;
@@ -760,9 +647,12 @@ app.get('/updateprofesor', function (req, res){
 			})
 		}
 	});
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
-app.get('/delprofesor', function (req, res){
+app.get('/delprofesor', function (req, res, next){
 	nomina = req.query.profesor;
 	connection.query('DELETE FROM profesores WHERE pro_nomina = ?', [nomina], function (err){
 		if(err){
@@ -771,47 +661,78 @@ app.get('/delprofesor', function (req, res){
 			data = ['Registro borrado exitosamente'];
 			res.send(data);
 		}
-	});
+		next();
+	});	
 });
 
-app.get('/masiveprofesor', function (req, res){
+app.get('/masiveprofesor', function (req, res, next){
 	data = JSON.parse(req.query.datos);
-	console.log(data);
-	approvedOrNot = [];
-	string = 'SELECT * FROM profesores WHERE pro_nomina = ? LIMIT 1';
-	for(i=0;i<data.length;i++){
-		doQuery(string, data[i][0]);
+	answer = [];
+	registros = [];
+	good = 0;
+	bad = 0;
+	incorrect = 0;
+	for(i=1;i<data.length;i++){
+		str = 'SELECT * FROM profesores WHERE pro_nomina = ? LIMIT 1';
+		usrfc = data[i][0].substring(0,1);
+		if(usrfc == "L"){
+			(function (usr){	
+				doQuery(str, usr[0], function(){
+					if(srch == "false"){
+						str = 'INSERT INTO profesores VALUES(?, ?, ?, ?, ?, ?)';
+						doQuery(str, usr);
+						good = good + 1;
+						registros.push('Usuario '+String(usr[0])+' subido exitosamente.\r\n');
+					}else{
+						bad = bad + 1;
+						registros.push('Usuario '+String(usr[0])+' ya existe.\r\n');
+					}
+				});
+			})(data[i]);
+		}else{
+			incorrect = incorrect + 1;
+			registros.push('El usuario '+String(data[i][0])+' no puede ser dado de alta. Solo puede dar de alta usuarios que comienzen con "L########"\r\n');
+		}
 	};
 	setTimeout(function(){
-		answer = [];
-		string = 'INSERT INTO profesores VALUES(?, ?, ?, ?, ?, ?)';
-		for(i=0;i<approvedOrNot.length;i++){
-			if(!approvedOrNot[i]){
-				answer.push("Usuario "+String(data[i][0])+" subido exitosamente.");
-				doQuery(string, data[i]);
-			}else{
-				answer.push("Usuario "+String(data[i][0])+" ya existe.");
-			}
+		answer.push("<br>Total de registros procesados: "+(data.length-1)+"<br><br>Registrados dados de alta exitosamente: "+good+"<br><br>"+"Registros que ya existían: "+bad+"<br><br>"+"Registros que no eran profesores: "+incorrect+"<br><br><a id='logupload' href='#'>Ver detalles del proceso</a>");
+		totalanswer = {ans: answer, reg: registros};
+		res.send(totalanswer);
+		next();
+	},2500);	
+});
+
+app.get('/getprofesor', function (req, res, next){
+	cla = req.query.clave;
+	stu = req.query.student;
+	connection.query('SELECT apm_nomina_profesor FROM alumno_profesor_matper WHERE apm_matricula_alumno = ? AND apm_clave_materia_periodo = ? LIMIT 1', [stu, cla], function (err, rows){
+		if(!err && rows.length != 0){
+			connection.query('SELECT pro_nombre, pro_apellido_paterno, pro_apellido_materno FROM profesores WHERE pro_nomina = ? LIMIT 1', [rows[0].apm_nomina_profesor], function (err, rows){
+				if(!err && rows.length != 0){
+					res.send(rows);
+				}
+			});
 		}
-		setTimeout(function(){
-			res.send(answer);
-		},2500);
-	},2500);
+	});
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
 
 // ALUMNOS
-app.get('/allstudent', function (req, res){
-	connection.query('SELECT * FROM alumnos', function (err, rows, fields){
+app.get('/allstudent', function (req, res, next){
+	connection.query('SELECT * FROM alumnos WHERE alu_matricula != "A00000000"', function (err, rows, fields){
 		if(err || rows.length == 0){
 			res.send({ status: 'error', text: 'Usuario no registrado, verifique bien su usuario y contraseña, si el problema persiste, contacte con el administrador!'});
 		}else{
 			res.send(rows);
 		}
-	});
+		next();
+	});	
 });
 
-app.get('/updatestudent', function (req, res){
+app.get('/updatestudent', function (req, res, next){
 	data = JSON.parse(req.query.alumno);
 	trans = req.query.type_trans;
 	matr = data.alu_matricula;
@@ -855,9 +776,12 @@ app.get('/updatestudent', function (req, res){
 			}
 		});
 	}
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
-app.get('/delstudent', function (req, res){
+app.get('/delstudent', function (req, res, next){
 	matr = req.query.alumno;
 	connection.query('DELETE FROM alumnos WHERE alu_matricula = ?', [matr], function (err){
 		if(err){
@@ -866,35 +790,49 @@ app.get('/delstudent', function (req, res){
 			data = ['Registro borrado exitosamente'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-app.get('/masivestudent', function (req, res){
+app.get('/masivestudent', function (req, res, next){
 	data = JSON.parse(req.query.datos);
-	approvedOrNot = [];
-	string = 'SELECT * FROM alumnos WHERE alu_matricula = ? LIMIT 1';
-	for(i=0;i<data.length;i++){
-		doQuery(string, data[i][0]);
-	};
-	setTimeout(function(){
-		answer = [];
-		string = 'INSERT INTO alumnos VALUES(?, ?, ?, ?, ?, ?)';
-		for(i=0;i<approvedOrNot.length;i++){
-			if(!approvedOrNot[i]){
-				answer.push("Alumno "+String(data[i][0])+" subido exitosamente.");
-				doQuery(string, data[i]);
-			}else{
-				answer.push("Alumno "+String(data[i][0])+" ya existe.");
-			}
+	answer = [];
+	registros = [];
+	good = 0;
+	bad = 0;
+	incorrect = 0;
+	for(i=1;i<data.length;i++){
+		str = 'SELECT * FROM alumnos WHERE alu_matricula = ? LIMIT 1';
+		usrfc = data[i][0].substring(0,1);
+		if(usrfc == "A"){
+			(function (usr){	
+				doQuery(str, usr[0], function(){
+					if(srch == "false"){
+						str = 'INSERT INTO alumnos VALUES(?, ?, ?, ?, ?, ?)';
+						doQuery(str, usr);
+						good = good + 1;
+						registros.push('Alumno '+String(usr[0])+' subido exitosamente.\r\n');
+					}else{
+						bad = bad + 1;
+						registros.push('Alumno '+String(usr[0])+' ya existe.\r\n');
+					}
+				});
+			})(data[i]);
+		}else{
+			incorrect = incorrect + 1;
+			registros.push('El usuario '+String(data[i][0])+' no puede ser dado de alta. Solo puede dar de alta usuarios que comienzen con "A########"\r\n');
 		}
-		setTimeout(function(){
-			res.send(answer);
-		},2500);
+	}
+	setTimeout(function(){
+		answer.push("<br>Total de registros procesados: "+(data.length-1)+"<br><br>Registrados dados de alta exitosamente: "+good+"<br><br>"+"Registros que ya existían: "+bad+"<br><br>"+"Registros que no eran alumnos: "+incorrect+"<br><br><a id='logupload' href='#'>Ver detalles del proceso</a>");
+		totalanswer = {ans: answer, reg: registros};
+		res.send(totalanswer);
+		next();
 	},2500);
 });
 
 // MATERIAS, PROFESORES Y ALUMNOS
-app.get('/allteachandstud', function (req, res){
+app.get('/allteachandstud', function (req, res, next){
 	profesores = [];
 	estudiantes = [];
 	connection.query("SELECT pro_nomina, pro_nombre, pro_apellido_paterno, pro_apellido_materno FROM profesores", function (err, rows){
@@ -902,7 +840,7 @@ app.get('/allteachandstud', function (req, res){
 			profesores = rows;
 		}
 	});
-	connection.query("SELECT alu_matricula, alu_nombre, alu_apellido_paterno, alu_apellido_materno FROM alumnos", function (err, rows){
+	connection.query('SELECT alu_matricula, alu_nombre, alu_apellido_paterno, alu_apellido_materno FROM alumnos WHERE alu_matricula != "A00000000"' , function (err, rows){
 		if(!err && rows.length != 0){
 			estudiantes = rows;
 		}
@@ -910,10 +848,11 @@ app.get('/allteachandstud', function (req, res){
 	setTimeout(function(){
 		data = { teachers: profesores, students: estudiantes };
 		res.send(data);
+		next();
 	},1000);
 });
 
-app.get('/updatepeoplecourse', function (req, res){
+app.get('/updatepeoplecourse', function (req, res, next){
 	periodo = req.query.period;
 	curso = req.query.course;
 	gente = JSON.parse(req.query.people);
@@ -921,21 +860,30 @@ app.get('/updatepeoplecourse', function (req, res){
 	profesores = [];
 	alumnos = [];
 	for(i=0;i<gente.items.length;i++){
-		for(j=0;j<gente.items[i].alumnos.length;j++){
+		if(gente.items[i].alumnos){
+			for(j=0;j<gente.items[i].alumnos.length;j++){
+				profesores.push(gente.items[i].profesor);
+				alumnos.push(gente.items[i].alumnos[j].alu_matricula);
+			}
+		}else{
 			profesores.push(gente.items[i].profesor);
-			alumnos.push(gente.items[i].alumnos[j].alu_matricula);
+			alumnos.push("A00000000");
 		}
 	}
 	connection.query("SELECT mpe_clave_materia_periodo FROM materia_periodo WHERE mpe_clave_periodo = ? AND mpe_clave_materia = ? LIMIT 1", [periodo, curso], function (err, rows){
 		if(!err && rows.length != 0){
 			clave = rows[0].mpe_clave_materia_periodo;
-			connection.query("DELETE FROM alumno_profesor_materia_periodo WHERE apm_clave_materia_periodo = ? AND apm_nomina_profesor NOT IN(?)", [clave, profesores]);
-			connection.query("DELETE FROM alumno_profesor_materia_periodo WHERE apm_clave_materia_periodo = ? AND apm_nomina_profesor NOT IN(?)", [clave, alumnos]);
+			connection.query("DELETE FROM alumno_profesor_matper WHERE apm_clave_materia_periodo = ? AND apm_nomina_profesor NOT IN(?)", [clave, profesores]);
+			connection.query("DELETE FROM alumno_profesor_matper WHERE apm_clave_materia_periodo = ? AND apm_matricula_alumno NOT IN(?)", [clave, alumnos]);
 			for(i=0;i<profesores.length;i++){
 				(function (pro, alu){
-					connection.query("SELECT * FROM alumno_profesor_materia_periodo WHERE apm_clave_materia_periodo = ? AND apm_nomina_profesor = ? AND apm_matricula_alumno = ?", [clave, pro, alu], function (err, rows){
+					connection.query("SELECT * FROM alumno_profesor_matper WHERE apm_clave_materia_periodo = ? AND apm_nomina_profesor = ? AND apm_matricula_alumno = ?", [clave, pro, alu], function (err, rows){
 						if(!err && rows.length == 0){
-							connection.query("INSERT INTO alumno_profesor_materia_periodo VALUES(?, ?, ?)", [alu, pro, clave]);
+							if(alu == "A00000000"){
+								connection.query("INSERT INTO alumno_profesor_matper VALUES(?, ?, ?)", [alu, pro, clave]);
+							}else{
+								connection.query("INSERT INTO alumno_profesor_matper VALUES(?, ?, ?)", [alu, pro, clave]);
+							}
 						}
 					});
 				})(profesores[i], alumnos[i]);
@@ -945,64 +893,79 @@ app.get('/updatepeoplecourse', function (req, res){
 	data.push("Información actualizada correctamente");
 	setTimeout(function(){
 		res.send(data);
+		next();
 	},1000);
 });
 
-app.get('/teacherandstudentsfromcourse', function (req, res){
+app.get('/teacherandstudentsfromcourse', function (req, res, next){
 	periodo = req.query.period;
 	curso = req.query.course;
 	lista = {items:[]};
-	connection.query("SELECT mpe_clave_materia_periodo FROM materia_periodo WHERE mpe_clave_periodo = ? AND mpe_clave_materia = ? LIMIT 1", [periodo, curso], function (err, rows){
-		clave = rows[0].mpe_clave_materia_periodo;
-		connection.query('SELECT * FROM alumno_profesor_materia_periodo WHERE apm_clave_materia_periodo = ? ORDER BY apm_nomina_profesor', [clave], function (err, rows){
-			if(!err && rows.length != 0){
-				students = [];
-				estudiantes = [];
-				for(h=0;h<rows.length;h++){
-					estudiantes.push(rows[h].apm_matricula_alumno);
-				}
-				connection.query('SELECT alu_matricula, alu_nombre, alu_apellido_paterno, alu_apellido_materno FROM alumnos WHERE alu_matricula IN(?)', [estudiantes], function (err, rows){
-					if(!err && rows.length != 0){
-						estudiantes = rows;
+	connection.query('SELECT mpe_clave_materia_periodo FROM materia_periodo WHERE mpe_clave_periodo = ? AND mpe_clave_materia = ? LIMIT 1', [periodo, curso], function (err, rows){
+		if(!err && rows.length != 0){
+			clave = rows[0].mpe_clave_materia_periodo;
+			connection.query('SELECT apm_nomina_profesor FROM alumno_profesor_matper WHERE apm_clave_materia_periodo = ? AND apm_matricula_alumno = "A00000000"', [clave], function (err, rows){
+				if(!err && rows.length != 0){
+					for(i=0;i<rows.length;i++){
+						lista.items.push({profesor: rows[i].apm_nomina_profesor});
 					}
-				});
-				setTimeout(function(){
-					for(i=0;i<=rows.length;i++){
-						if(i == rows.length){
-							lista.items.push({profesor: old_prof, alumnos: students});
-							break;
+				}
+			});
+			connection.query('SELECT apm_nomina_profesor, alu_matricula, alu_nombre, alu_apellido_paterno, alu_apellido_materno FROM alumno_profesor_matper INNER JOIN alumnos ON apm_matricula_alumno = alu_matricula WHERE apm_clave_materia_periodo = ? ORDER BY apm_nomina_profesor', [clave], function (err, rows){
+				if(!err && rows.length != 0){
+					prof = "";
+					students = [];
+					flag = true;
+					for(i=0;i<rows.length;i++){
+						if(flag){
+							prof_actual = rows[i].apm_nomina_profesor;
+							flag = false;
 						}
-						if(i == 0){
-							old_prof = rows[i].apm_nomina_profesor;
+						if(i == 0 && rows[i].alu_matricula == "A00000000"){
+							lista.items.push({profesor: prof_actual, alumnos: []});
+							flag = true;
+							continue;
+						}else if(i != 0 && rows[i].alu_matricula == "A00000000"){
+							lista.items.push({profesor: prof_actual, alumnos: students});
+							flag = true;
+							continue;
 						}
-						if(old_prof != rows[i].apm_nomina_profesor){
-							lista.items.push({profesor: old_prof, alumnos: students});
-							old_prof = rows[i].apm_nomina_profesor;
+						if(prof_actual != rows[i].apm_nomina_profesor){
+							lista.items.push({profesor: prof_actual, alumnos: students});
+							prof_actual = rows[i].apm_nomina_profesor;
 							students = [];
 						}
-						students.push(estudiantes[i]);
+						if(i == rows.length-1){
+							lista.items.push({profesor: prof_actual, alumnos: students});
+						}
+						students.push({ alu_matricula: rows[i].alu_matricula, alu_nombre: rows[i].alu_nombre, alu_apellido_paterno: rows[i].alu_apellido_paterno, alu_apellido_materno: rows[i].alu_apellido_materno });
 					}
-				},500);
-			}
-		});
-		setTimeout(function(){
-			res.send(lista);
-		},1000);
+					res.send(lista);
+				}else{
+					res.send({ status: 'error', text: 'Este curso no tiene profesores ni alumnos asignados de momento!'});
+				}
+			});
+		}
 	});
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
+
 // COMPETENCIAS
-app.get('/allcompetence', function (req, res){
+app.get('/allcompetence', function (req, res, next){
 	connection.query('SELECT * FROM competencias', function (err, rows){
 		if(err || rows.length == 0){
 			res.send({ status: 'error', text: 'No hay competencias registradas de momento!'});
 		}else{
 			res.send(rows);
 		}
+		next();
 	});
 });
 
-app.get('/updatecompetence', function (req, res){
+app.get('/updatecompetence', function (req, res, next){
 	data = JSON.parse(req.query.competencia);
 	trans = req.query.type_trans;
 	clave = data.com_clave_competencia;
@@ -1044,9 +1007,12 @@ app.get('/updatecompetence', function (req, res){
 			}
 		});
 	}
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
-app.get('/delcompetence', function (req, res){
+app.get('/delcompetence', function (req, res, next){
 	clave = req.query.competencia;
 	connection.query('DELETE FROM competencias WHERE com_clave_competencia = ?', [clave], function (err){
 		if(err){
@@ -1055,10 +1021,11 @@ app.get('/delcompetence', function (req, res){
 			data = ['Registro borrado exitosamente'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-app.get('/allsubcompetence', function (req, res){
+app.get('/allsubcompetence', function (req, res, next){
 	clave_com = req.query.competencia;
 	connection.query('SELECT * FROM subcompetencias WHERE sco_clave_competencia = ?', [clave_com], function (err, rows, fields){
 		if(err || rows.length == 0){
@@ -1066,10 +1033,11 @@ app.get('/allsubcompetence', function (req, res){
 		}else{
 			res.send(rows);
 		}
+		next();
 	});
 });
 
-app.get('/updatesubcompetence', function (req, res){
+app.get('/updatesubcompetence', function (req, res, next){
 	data = JSON.parse(req.query.subcompetencia);
 	trans = req.query.type_trans;
 	cla_com = req.query.competencia;
@@ -1077,6 +1045,14 @@ app.get('/updatesubcompetence', function (req, res){
 	desc = data.sco_descripcion_subcompetencia;
 	fijo = data.sco_fijo;
 	taxo = data.sco_taxonomia;
+	levels = [];
+	if(taxo === "Marzano y Kendall"){
+		levels = [{level: 1, desclvl: "Recuperación"}, {level: 2, desclvl: "Comprensión"}, {level: 3, desclvl: "Análisis"}, {level: 4, desclvl: "Utilización del conocimiento"}];
+	}else if(taxo === "Simpson"){
+		levels = [{level: 1, desclvl: "Percepción"}, {level: 2, desclvl: "Disposición"}, {level: 3, desclvl: "Respuesta dirigida"}, {level: 4, desclvl: "Mecanismo"}, {level: 5, desclvl: "Respuestas complejas y manifiestas"}, {level: 6, desclvl: "Adaptación"}, {level: 7, desclvl: "Creación"}];
+	}else if(taxo === "Krathwohl"){
+		levels = [{level: 1, desclvl: "Recibir"}, {level: 2, desclvl: "Responder"}, {level: 3, desclvl: "Valorar"}, {level: 4, desclvl: "Organizar"}, {level: 5, desclvl: "Caracterizar"}];
+	}
 	connection.query('SELECT * FROM competencias WHERE com_clave_competencia = ? LIMIT 1', [cla_com], function (err, rows){
 		if(!err && rows.length == 0){
 			data = ['Error, la clave de la competencia no existe!'];
@@ -1090,6 +1066,9 @@ app.get('/updatesubcompetence', function (req, res){
 					data = [err];
 					res.send(err);
 				}else{
+					for(i=0;i<levels.length;i++){
+						connection.query('INSERT INTO niveles VALUES(?, ?, ?, ?)', [clave, levels[i].desclvl, levels[i].level, null]);
+					}
 					data = ['Subcompetencia dada de alta exitosamente'];
 					res.send(data);
 				}
@@ -1109,9 +1088,12 @@ app.get('/updatesubcompetence', function (req, res){
 			res.send(data);
 		}
 	});
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
-app.get('/delsubcompetence', function (req, res){
+app.get('/delsubcompetence', function (req, res, next){
 	clave = req.query.subcompetencia;
 	connection.query('DELETE FROM subcompetencias WHERE sco_clave_subcompetencia = ?', [clave], function (err){
 		if(err){
@@ -1120,10 +1102,11 @@ app.get('/delsubcompetence', function (req, res){
 			data = ['Registro borrado exitosamente'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-app.get('/masivedelsubcompetence', function (req, res){
+app.get('/masivedelsubcompetence', function (req, res, next){
 	data = JSON.parse(req.query.competencia);
 	clave = data.com_clave_competencia;
 	desc = data.com_descripcion_competencia;
@@ -1134,21 +1117,23 @@ app.get('/masivedelsubcompetence', function (req, res){
 			data = ['Todas las subcompetencias para la competencia ' + clave + ' ' + desc + ' ' + ' fueron borradas!'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-app.get('/alllevels', function (req, res){
+app.get('/alllevels', function (req, res, next){
 	clave = req.query.subcompetencia;
-	connection.query('SELECT * FROM niveles WHERE niv_clave_subcompetencia = ? ORDER BY niv_nivel', [clave], function (err, rows, fields){
+	connection.query('SELECT * FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_clave_actividad IS NULL ORDER BY niv_nivel', [clave], function (err, rows, fields){
 		if(err || rows.length == 0){
 			res.send({ status: 'error', text: 'No hay niveles registrados de momento!'});
 		}else{
 			res.send(rows);
 		}
+		next();
 	});
 });
 
-app.get('/updatelevel', function (req, res){
+app.get('/updatelevel', function (req, res, next){
 	data = JSON.parse(req.query.nivel);
 	trans = req.query.type_trans;
 	cla_sco = req.query.subcompetencia;
@@ -1180,9 +1165,12 @@ app.get('/updatelevel', function (req, res){
 			res.send(data);
 		}
 	});
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
-app.get('/dellevel', function (req, res){
+app.get('/dellevel', function (req, res, next){
 	cla_sco = req.query.subcompetencia;
 	nivel = req.query.nivel;
 	connection.query('DELETE FROM niveles WHERE niv_clave_subcompetencia = ? AND niv_nivel = ?', [cla_sco, nivel], function (err){
@@ -1192,10 +1180,11 @@ app.get('/dellevel', function (req, res){
 			data = ['Nivel borrado exitosamente'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-app.get('/masivedellevel', function (req, res){
+app.get('/masivedellevel', function (req, res, next){
 	data = JSON.parse(req.query.subcompetencia);
 	cla_sco = data.sco_clave_subcompetencia;
 	desc = data.sco_descripcion_subcompetencia;
@@ -1206,10 +1195,11 @@ app.get('/masivedellevel', function (req, res){
 			data = ['Todos los niveles para la subcompetencia ' + cla_sco + ' ' + desc + ' ' + ' fueron borrados!'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-app.get('/checklevels', function (req, res){
+app.get('/checklevels', function (req, res, next){
 	data = req.query.competencia;
 	flag = false;
 	approvedOrNot = [];
@@ -1219,23 +1209,23 @@ app.get('/checklevels', function (req, res){
 	};
 	setTimeout(function(){
 		res.send(approvedOrNot);
+		next();
 	},1000);
 });
 
-
-
 // MATERIAS
-app.get('/allsubjects', function (req, res){
+app.get('/allsubjects', function (req, res, next){
 	connection.query('SELECT * FROM materias', function (err, rows, fields){
 		if(err || rows.length == 0){
 			res.send({ status: 'error', text: 'No hay materias registradas de momento!'});
 		}else{
 			res.send(rows);
 		}
+		next();
 	});
 });
 
-app.get('/updatesubject', function (req, res){
+app.get('/updatesubject', function (req, res, next){
 	data = JSON.parse(req.query.materia);
 	trans = req.query.type_trans;
 	clave = data.mat_clave_materia;
@@ -1267,9 +1257,12 @@ app.get('/updatesubject', function (req, res){
 			res.send(data);
 		}
 	});
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
-app.get('/delsubject', function (req, res){
+app.get('/delsubject', function (req, res, next){
 	clave = req.query.materia;
 	connection.query('DELETE FROM materias WHERE mat_clave_materia = ?', [clave], function (err){
 		if(err){
@@ -1278,12 +1271,12 @@ app.get('/delsubject', function (req, res){
 			data = ['Materia borrada exitosamente'];
 			res.send(data);
 		}
+		next();
 	});
 });
 
-
 // PERIODO Y MATERIAS
-app.get('/allsubjectperiod', function (req, res){
+app.get('/allsubjectperiod', function (req, res, next){
 	program = req.query.program;
 	period = req.query.period;
 	year = req.query.year;
@@ -1317,9 +1310,90 @@ app.get('/allsubjectperiod', function (req, res){
 			res.send(null);
 		}
 	});
+	setTimeout(function(){
+		next();
+	},1000);
 });
 
-app.get('/updatesubjectperiod', function (req, res){
+app.get('/allsubjectinscribed', function (req, res, next){
+	program = req.query.program;
+	period = req.query.period;
+	year = req.query.year;
+	subject = req.query.subject;
+	string = 'SELECT * FROM materia_periodo WHERE ';
+	if(program){
+		string += "mpe_clave_periodo LIKE '%"+program+"%'";
+	}
+	if(program && period){
+		string += " AND ";
+	}
+	if(period){
+		string += "mpe_clave_periodo LIKE '%"+period+"%'";
+	}
+	if(period && year){
+		string += " AND ";
+	}
+	if(year){
+		string += "mpe_clave_periodo LIKE '%"+year+"%'";
+	}
+	if(whoIsId.substring(0,1) === "L"){
+		string2 = "SELECT * FROM alumno_profesor_matper WHERE apm_nomina_profesor = '"+whoIsId+"'";
+	}
+	if(whoIsId.substring(0,1) === "A"){
+		string2 = "SELECT * FROM alumno_profesor_matper WHERE apm_matricula_alumno = '"+whoIsId+"'";
+	}
+	connection.query(string2, function (err, rows){
+		if(!err && rows.length != 0){
+			data = [];
+			for(i=0;i<rows.length;i++){
+				data.push(rows[i].apm_clave_materia_periodo);
+			}
+			string += " AND mpe_clave_materia_periodo IN ("+data+")";
+			connection.query(string, function (err, rows){
+				if(!err && rows.length != 0){
+					data = [];
+					for(i=0;i<rows.length;i++){
+						data.push(rows[i].mpe_clave_materia);
+					}
+					connection.query('SELECT * FROM materias WHERE mat_clave_materia IN (?)', [data], function (err, rows){
+						res.send(rows);
+					})
+				}else{
+					res.send({status: 'error', text: 'No tienes ninguna materia inscrita en este periodo.'});
+				}
+			});
+		}else{
+			res.send({status: 'error', text: 'No tienes ninguna materia inscrita.'});
+		}
+	});
+	setTimeout(function(){
+		next();
+	},1000);
+});
+
+app.get('/getmystudents', function (req, res, next){
+	cla = req.query.clave;
+	connection.query('SELECT * FROM alumno_profesor_matper WHERE apm_nomina_profesor = ? AND apm_clave_materia_periodo = ?', [whoIsId, cla], function (err, rows){
+		if(!err && rows.length != 0){
+			alumnos = [];
+			for(i=0;i<rows.length;i++){
+				alumnos.push(rows[i].apm_matricula_alumno);
+			}
+			connection.query('SELECT alu_matricula, alu_nombre, alu_apellido_paterno, alu_apellido_materno FROM alumnos WHERE alu_matricula IN(?)', [alumnos], function (err, rows){
+				if(!err && rows.length != 0){
+					res.send(rows);
+				}
+			})
+		}else{
+			res.send({status: 'error', text: 'No tienes alumnos inscritos para este curso.'});
+		}
+	});
+	setTimeout(function(){
+		next();
+	},1000);
+});
+
+app.get('/updatesubjectperiod', function (req, res, next){
 	subjectperiod = JSON.parse(req.query.materiaperiodo);
 	period = req.query.periodo;
 	claves = [];
@@ -1352,23 +1426,9 @@ app.get('/updatesubjectperiod', function (req, res){
 	});
 	setTimeout(function(){
 		res.send(data);
+		next();
 	},1000);
 });
-
-
-
-function doQuery (string, arrayValues) {
-	connection.query(string, arrayValues, function (err, rows){
-		if(!err && rows.length != 0){
-			approvedOrNot.push(true);
-		}else{
-			approvedOrNot.push(false);
-		}
-	});
-}
-
-
-
 
 
 //FUNCIONES
@@ -1383,7 +1443,6 @@ function giveToken(user, rol){
 	}, app.get('jwtTokenSecret'));
 	return token;
 }
-
 
 //Funcion que verifica la caducidad del token
 function autenticate(token){
@@ -1407,7 +1466,7 @@ function autenticate(token){
 	return vigent;
 }
 
-
+//Funcion que extiende el tiempo de sesion de usuario para que no expire si sigue activo
 function extendTime(token){
 	decoded = jwt.decode(token, app.get('jwtTokenSecret'));
 	expires = moment().add(600, 'seconds').valueOf();
@@ -1418,7 +1477,6 @@ function extendTime(token){
 	}, app.get('jwtTokenSecret'));
 	return token;
 }
-
 
 //Funcion que verifica el perfil del usuario
 function whoAreYou(token){
@@ -1432,28 +1490,31 @@ function whoAreYou(token){
 			return 'Titular';
 		case 'so-odu':
 			return 'Administrador';
-		}
+	}
 }
 
-
+//Funcion que detecta el rol del usuario y sus privilegios
 function whoAreYouName(token, callback){
 	decoded = jwt.decode(token, app.get('jwtTokenSecret'));
 	user = decoded.iss;
 	name = '';
-	connection.query('SELECT * FROM alumnos WHERE alu_matricula = ? LIMIT 1', [user], function (err, rows) {
+	if(decoded.iss == 'L01421024'){
+		callback('Jonathan Ayala Rodríguez', decoded.iss);
+	}else{
+		connection.query('SELECT * FROM alumnos WHERE alu_matricula = ? LIMIT 1', [user], function (err, rows) {
 		if(!err && rows.length != 0){
-			name = rows[0].alu_nombre + ' ' + rows[0].alu_apellido_paterno + ' ' + rows[0].alu_apellido_materno;
-			callback(name);
-		}
-	});
-	connection.query('SELECT * FROM profesores WHERE pro_nomina = ? LIMIT 1', [user], function (err, rows) {
-		if(!err && rows.length != 0){
-			name = rows[0].pro_nombre + ' ' + rows[0].pro_apellido_paterno + ' ' + rows[0].pro_apellido_materno;
-			callback(name);
-		}
-	});
+				name = rows[0].alu_nombre + ' ' + rows[0].alu_apellido_paterno + ' ' + rows[0].alu_apellido_materno;
+				callback(name, user);
+			}
+		});
+		connection.query('SELECT * FROM profesores WHERE pro_nomina = ? LIMIT 1', [user], function (err, rows) {
+			if(!err && rows.length != 0){
+				name = rows[0].pro_nombre + ' ' + rows[0].pro_apellido_paterno + ' ' + rows[0].pro_apellido_materno;
+				callback(name, user);
+			}
+		});
+	}	
 }
-
 
 //Funcion que asigna el perfil del usuario
 function thisIsYou(rol){
@@ -1469,10 +1530,23 @@ function thisIsYou(rol){
 	}
 }
 
-
-//Funcion que obtiene el token de la cookie
-function getCookie(name, cookie) {
-	re = new RegExp(name + "=([^;]+)");
-	value = re.exec(cookie);
-	return (value != null) ? unescape(value[1]) : null;
+//Funcion que puede realizar queries sucevios con funcion callback
+function doQuery (string, arrayValues, cllbckfn) {
+	connection.query(string, arrayValues, function (err, rows){
+		if(!err && rows.length != 0){
+			srch = "true";
+		}else{
+			srch = "false";
+		}
+		if(cllbckfn && typeof(cllbckfn) == "function"){
+			cllbckfn();
+		}
+	});
 }
+
+
+
+app.get('*', function (req, res, next){
+	connection.end();
+	console.log("conexion terminada");	
+});

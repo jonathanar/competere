@@ -29,17 +29,22 @@ html, body {
     top: 50%;
     transform: translate(0px, -51%);
 }
+#hiddeninfo {
+    display: none;
+}
 .modal_confirm, #loader {
 	background-color: rgba(0,0,0,0.5);
     height: 100%;
+    overflow: auto;
     position: fixed;
     width: 100%;
     z-index: 3;
 }
 .modal_confirm > div {
     background-color: rgba(255, 255, 255, 1);
-    border: 5px solid #000;
-    border-radius: 5px;
+    -webkit-box-shadow: 4px 3px 6px -1px rgba(50, 50, 50, 0.7);
+    -moz-box-shadow: 4px 3px 6px -1px rgba(50, 50, 50, 0.7);
+    box-shadow: 4px 3px 6px -1px rgba(50, 50, 50, 0.7);
     left: 50%;
     padding: 40px 25px;
     position: absolute;
@@ -62,6 +67,9 @@ html, body {
     height: 35px;
     margin-right: 10px;
     width: 130px !important;
+}
+.strtohtml {
+    text-align: left !important;
 }
 #main_page {
 	height: 100%;
@@ -136,12 +144,24 @@ html, body {
     margin: 20px auto;
     padding: 5px
 }
-#box_login input[type="submit"] {
-    background: #052063 none repeat scroll 0 0;
+.btnsave, .btncancel, #box_login input[type="submit"] {
+    border-radius: 4px;
+    border-width: 1px;
     color: #ffffff;
+    cursor: pointer;
     font-size: 14px;
     height: 35px;
+    min-width: 110px;
+}
+#box_login input[type="submit"] {
+    background: #052063 none repeat scroll 0 0;
     width: 130px !important;
+}
+.btnsave {
+    background: #4caf50 none repeat scroll 0 0;
+}
+.btncancel {
+    background: #052063 none repeat scroll 0 0;
 }
 #box_login p {
     margin: 15px;
@@ -156,28 +176,35 @@ html, body {
 #box_login div:last-child > a {
     color: #7b7b7b;
     cursor: pointer;
-    left: 30px;
+    left: 20px;
     padding: 15px 20px;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
 }
+#box_login div:last-child > a:nth-child(3) {
+    left: 150px;
+}
 #box_login div:last-child > hr {
     background: #7b7b7b none repeat scroll 0 0;
     height: 40px;
-    left: 170px;
+    left: 140px;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     width: 1px;
 }
-#menu_admin {
+#menu_view {
     flex-wrap: wrap;
     margin: auto;
     text-align: center;
+    padding: 20px 0;
     max-width: 1000px;
 }
-#menu_admin > section {
+#menu_view > section {
+    /*background-color: #e7e7e7 !important;*/
+    background-position: 50% 30% !important;
+    background-repeat: no-repeat !important;
     color: #fff;
     cursor: pointer;
     display: inline-block;
@@ -185,44 +212,28 @@ html, body {
     height: 200px;
     margin: 10px;
     text-align: center;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, background 0.5s, color 0.5s;
     width: 200px;
 }
-#menu_admin > section:hover {
-    -webkit-box-shadow: 0px 0px 10px 2px rgba(50, 50, 50, 0.5);
-    -moz-box-shadow: 0px 0px 10px 2px rgba(50, 50, 50, 0.5);
-    box-shadow: 0px 0px 10px 2px rgba(50, 50, 50, 0.5);
+#menu_view > section:hover {
+    -webkit-box-shadow: 0px 0px 3px 2px rgba(150, 150, 150, 0.5);
+    -moz-box-shadow: 0px 0px 3px 2px rgba(150, 150, 150, 0.5);
+    box-shadow: 0px 0px 3px 2px rgba(150, 150, 150, 0.5);
 }
-#menu_admin > section:nth-child(1) {
-	background-color: #0070c6;
-}
-#menu_admin > section:nth-child(2) {
-	background-color: #19addd;
-}
-#menu_admin > section:nth-child(3) {
-	background-color: #63bf30;
-}
-#menu_admin > section:nth-child(4) {
-	background-color: #087b40;
-}
-#menu_admin > section:nth-child(5) {
-	background-color: #bf0d25;
-}
-#menu_admin > section:nth-child(6) {
-	background-color: #ff6d00;
-}
-#menu_admin > section:nth-child(7) {
-	background-color: #770e46;
-}
-#menu_admin > section:nth-child(8) {
-    background-color: #8400ba;
-}
-#menu_admin > section > div {
+#menu_view > section > div {
+    color: #6c6c6c;
     display: table;
     height: 100%;
     width: 100%;
+    background-color: #e7e7e7;
+    background-position: 50% 30%;
+    background-repeat: no-repeat;
 }
-#menu_admin > section > div > a {
+#menu_view section:hover > div {
+    background: transparent !important;
+    color: #e7e7e7;
+}
+#menu_view > section > div > a {
     display: table-cell;
     vertical-align: middle;
     width: 100%;
@@ -257,32 +268,163 @@ html, body {
 #dinamic_content [type='file'] {
     display: none;
 }
-#competencias > h2 {
-    background-color: #0070c6;
+#menu_view #competencias, #competencias > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#cf268f+0,964889+100 */
+    background: #cf268f; /* Old browsers */
+    background: -moz-linear-gradient(top,  #cf268f 0%, #964889 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #cf268f 0%,#964889 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #cf268f 0%,#964889 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cf268f', endColorstr='#964889',GradientType=0 ); /* IE6-9 */
+
 }
-#profesores > h2 {
-    background-color: #19addd;
+#menu_view #competencias {
+    background: #cf268f; /* Old browsers */
+    background: url("/img/icono_conocimiento1.png"), -moz-linear-gradient(top,  #cf268f 0%, #964889 100%); /* FF3.6-15 */
+    background: url("/img/icono_conocimiento1.png"), -webkit-linear-gradient(top,  #cf268f 0%,#964889 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_conocimiento1.png"), linear-gradient(to bottom,  #cf268f 0%,#964889 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_conocimiento1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#cf268f', endColorstr='#964889',GradientType=0 ); /* IE6-9 */
+    /*background-image: url("/img/icono_conocimiento1.png");*/
 }
-#materias > h2 {
-    background-color: #63bf30;
+#menu_view #competencias > div {
+    background-image: url("/img/icono_conocimiento.png");
 }
-#alumnos > h2 {
-    background-color: #087b40;
+#menu_view #profesores, #profesores > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#3fc2ee+0,5156a1+100 */
+    background: #3fc2ee; /* Old browsers */
+    background: -moz-linear-gradient(top,  #3fc2ee 0%, #5156a1 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #3fc2ee 0%,#5156a1 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #3fc2ee 0%,#5156a1 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3fc2ee', endColorstr='#5156a1',GradientType=0 ); /* IE6-9 */
 }
-#matprofalu > h2 {
-    background-color: #bf0d25;
+#menu_view #profesores {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#3fc2ee+0,5156a1+100 */
+    background: #3fc2ee; /* Old browsers */
+    background: url("/img/icono_profesor1.png"), -moz-linear-gradient(top,  #3fc2ee 0%, #5156a1 100%); /* FF3.6-15 */
+    background: url("/img/icono_profesor1.png"), -webkit-linear-gradient(top,  #3fc2ee 0%,#5156a1 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_profesor1.png"), linear-gradient(to bottom,  #3fc2ee 0%,#5156a1 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_profesor1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#3fc2ee', endColorstr='#5156a1', GradientType=0 ); /* IE6-9 */
 }
-#actividades > h2 {
-    background-color: #ff6d00;
+#menu_view #profesores > div {
+    background-image: url("/img/icono_profesor.png");
 }
-#evaluaciones > h2 {
-    background-color: #770e46;
+#menu_view #materias, #materias > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#e82081+0,e8233d+100 */
+    background: #e82081; /* Old browsers */
+    background: -moz-linear-gradient(top,  #e82081 0%, #e8233d 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #e82081 0%,#e8233d 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #e82081 0%,#e8233d 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e82081', endColorstr='#e8233d',GradientType=0 ); /* IE6-9 */
 }
-#reportes > h2 {
-    background-color: #8400ba;
+#menu_view #materias {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#e82081+0,e8233d+100 */
+    background: #e82081; /* Old browsers */
+    background: url("/img/icono_materias1.png"), -moz-linear-gradient(top,  #e82081 0%, #e8233d 100%); /* FF3.6-15 */
+    background: url("/img/icono_materias1.png"), -webkit-linear-gradient(top,  #e82081 0%,#e8233d 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_materias1.png"), linear-gradient(to bottom,  #e82081 0%,#e8233d 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_materias1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#e82081', endColorstr='#e8233d',GradientType=0 ); /* IE6-9 */
 }
+#menu_view #materias > div {
+    background-image: url("/img/icono_materias.png");
+}
+#menu_view #alumnos, #alumnos > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#5dd0c3+0,199ed2+100 */
+    background: #5dd0c3; /* Old browsers */
+    background: -moz-linear-gradient(top,  #5dd0c3 0%, #199ed2 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #5dd0c3 0%,#199ed2 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #5dd0c3 0%,#199ed2 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#5dd0c3', endColorstr='#199ed2',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #alumnos {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#5dd0c3+0,199ed2+100 */
+    background: #5dd0c3; /* Old browsers */
+    background: url("/img/icono_alumnos1.png"), -moz-linear-gradient(top,  #5dd0c3 0%, #199ed2 100%); /* FF3.6-15 */
+    background: url("/img/icono_alumnos1.png"), -webkit-linear-gradient(top,  #5dd0c3 0%,#199ed2 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_alumnos1.png"), linear-gradient(to bottom,  #5dd0c3 0%,#199ed2 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_alumnos1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#5dd0c3', endColorstr='#199ed2',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #alumnos > div {
+    background-image: url("/img/icono_alumnos.png");
+}
+#menu_view #matprofalu, #matprofalu > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#b6d024+0,73b93c+100 */
+    background: #b6d024; /* Old browsers */
+    background: -moz-linear-gradient(top,  #b6d024 0%, #73b93c 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #b6d024 0%,#73b93c 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #b6d024 0%,#73b93c 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b6d024', endColorstr='#73b93c',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #matprofalu {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#b6d024+0,73b93c+100 */
+    background: #b6d024; /* Old browsers */
+    background: url("/img/icono_asignacion1.png"), -moz-linear-gradient(top,  #b6d024 0%, #73b93c 100%); /* FF3.6-15 */
+    background: url("/img/icono_asignacion1.png"), -webkit-linear-gradient(top,  #b6d024 0%,#73b93c 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_asignacion1.png"), linear-gradient(to bottom,  #b6d024 0%,#73b93c 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_asignacion1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#b6d024', endColorstr='#73b93c',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #matprofalu > div {
+    background-image: url("/img/icono_asignacion.png");
+}
+#menu_view #actividades, #actividades > h2, #actividades_titular > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#eb9f20+0,df3c28+100 */
+    background: #eb9f20; /* Old browsers */
+    background: -moz-linear-gradient(top,  #eb9f20 0%, #df3c28 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #eb9f20 0%,#df3c28 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #eb9f20 0%,#df3c28 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eb9f20', endColorstr='#df3c28',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #actividades {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#eb9f20+0,df3c28+100 */
+    background: #eb9f20; /* Old browsers */
+    background: url("/img/icono_actividades1.png"), -moz-linear-gradient(top,  #eb9f20 0%, #df3c28 100%); /* FF3.6-15 */
+    background: url("/img/icono_actividades1.png"), -webkit-linear-gradient(top,  #eb9f20 0%,#df3c28 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_actividades1.png"), linear-gradient(to bottom,  #eb9f20 0%,#df3c28 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_actividades1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#eb9f20', endColorstr='#df3c28',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #actividades > div {
+    background-image: url("/img/icono_actividades.png");
+}
+#menu_view #evaluaciones, #evaluaciones > h2, #evaluaciones_profesor > h2, #evaluaciones_titular > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#7c94c1+0,64419e+100 */
+    background: #7c94c1; /* Old browsers */
+    background: -moz-linear-gradient(top,  #7c94c1 0%, #64419e 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #7c94c1 0%,#64419e 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #7c94c1 0%,#64419e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7c94c1', endColorstr='#64419e',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #evaluaciones {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#7c94c1+0,64419e+100 */
+    background: #7c94c1; /* Old browsers */
+    background: url("/img/icono_evaluaciones1.png"), -moz-linear-gradient(top,  #7c94c1 0%, #64419e 100%); /* FF3.6-15 */
+    background: url("/img/icono_evaluaciones1.png"), -webkit-linear-gradient(top,  #7c94c1 0%,#64419e 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_evaluaciones1.png"), linear-gradient(to bottom,  #7c94c1 0%,#64419e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_evaluaciones1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#7c94c1', endColorstr='#64419e',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #evaluaciones > div {
+    background-image: url("/img/icono_evaluaciones.png");
+}
+#menu_view #reportes, #reportes > h2, #reportes_alumno > h2 {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#23b374+0,51728e+100 */
+    background: #23b374; /* Old browsers */
+    background: -moz-linear-gradient(top,  #23b374 0%, #51728e 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #23b374 0%,#51728e 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #23b374 0%,#51728e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#23b374', endColorstr='#51728e',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #reportes {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#23b374+0,51728e+100 */
+    background: #23b374; /* Old browsers */
+    background: url("/img/icono_reportes1.png"), -moz-linear-gradient(top,  #23b374 0%, #51728e 100%); /* FF3.6-15 */
+    background: url("/img/icono_reportes1.png"), -webkit-linear-gradient(top,  #23b374 0%,#51728e 100%); /* Chrome10-25,Safari5.1-6 */
+    background: url("/img/icono_reportes1.png"), linear-gradient(to bottom,  #23b374 0%,#51728e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: url("/img/icono_reportes1.png"), progid:DXImageTransform.Microsoft.gradient( startColorstr='#23b374', endColorstr='#51728e',GradientType=0 ); /* IE6-9 */
+}
+#menu_view #reportes > div {
+     background-image: url("/img/icono_reportes.png");
+}
+
 .details table, .rubricas {
     border-collapse: collapse;
+    margin: auto;
 }
 .details table input {
     border: none;
@@ -349,8 +491,55 @@ html, body {
     margin: 0 0 0 50px;
     position: relative;
 }
+/*.admin_control ul {
+    margin-left: 50px;
+    text-align: left;
+}*/
+.admin_control ul {
+    list-style: none;
+    padding:0;
+    text-align: left;
+    margin:0;
+}
+.admin_control ul li { 
+    padding-left: 1em; 
+    text-indent: -.7em;
+}
+.admin_control ul li:before {
+    color: #167f92;
+    content: "• ";
+    font-size: 18px;
+    font-weight: bold;
+}
+.srrslt {
+    color: red;
+    display: block;
+    margin-bottom: 20px;
+    margin-top: -20px;
+}
 .btn_add {
     color: #29B505;
+}
+.btnrad {
+    display: inline-block;
+    height: 35px;
+    margin-left: 20px;
+    position: relative;
+    transform: translateY(30%);
+    width: 155px;
+}
+.btnrad * {
+    margin: 0 !important;
+    position: absolute;
+}
+.btnrad input[type="radio"] {
+    cursor: pointer;
+    height: 100%;
+    opacity: 0;
+    width: 100%;
+}
+.btnrad2 {
+    width: 112px !important;
 }
 .btn_add:hover {
     -webkit-box-shadow: 0px 0px 5px 0px rgba(40, 181, 85, 0.75);
@@ -421,7 +610,12 @@ html, body {
     display: block;
     margin-top: 20px;
 }
-
+.inlflx {
+    display: inline-flex;
+}
+.inlflx > div {
+    margin: 0 10px;
+}
 .details > button {
     display: inline-block;
     margin: 15px auto;
@@ -461,7 +655,7 @@ html, body {
     border-color: red;
     padding: 5px;
 }
-#actividades input[type="radio"], #evaluaciones input[type="radio"], #reportes input[type="radio"] {
+#actividades input[type="radio"], #actividades_titular input[type="radio"], #evaluaciones input[type="radio"], #evaluaciones_profesor input[type="radio"], #evaluaciones_titular input[type="radio"], #reportes input[type="radio"], #reportes_alumno input[type="radio"] {
     display: inline-block;
 }
 .details > textarea {
@@ -472,7 +666,7 @@ html, body {
 .rubricas textarea {
     margin: 0;
 }
-#evaluaciones form .details {
+#evaluaciones form .details, #evaluaciones_profesor form .details, #evaluaciones_titular form .details {
     text-align: left;
 }
 .rubricas tr > td {
@@ -481,8 +675,9 @@ html, body {
     text-align: center;
     width: 150px;
 }
-.rubricas > tbody > tr > td:not(.niveles), .niveles > table > tbody > tr > td {
-    padding: 10px;
+/*.rubricas > tbody > tr > td:not(.niveles), */
+.niveles > table > tbody > tr > td {
+    padding: 20px;
 }
 .rubricas > tbody > tr:nth-child(even) {
     background: white;
@@ -496,17 +691,17 @@ html, body {
 .perfil_experto {
     display: none !important;
     font-size: 12px;
-    height: 100%;
-    position: absolute;
-    right: 0;
+    left: 0;
     top: 0;
-    width: 100%;
 }
 .perfil_experto span {
     opacity: 0.5;
     position: absolute;
-    right: 0;
+    left: 0;
     top: 0;
+}
+.perfil_experto span img, .perfil_experto span input[type='radio'] {
+    left: 0;
 }
 .perfil_experto input {
     margin: 3px;
@@ -517,7 +712,7 @@ td.req_lev {
 .rubricas textarea {
     background: transparent none repeat scroll 0 0;
     border: medium none;
-    font-family: Arial;
+    font-family: 'Open Sans';
     font-size: 14px;
     overflow: hidden;
     resize: none;
@@ -537,7 +732,7 @@ td.req_lev {
 .rubricas button img {
     width: 15px;
 }
-#evaluaciones .rubricas textarea {
+#evaluaciones .rubricas textarea, #evaluaciones_profesor .rubricas textarea, #evaluaciones_titular .rubricas textarea {
     background: transparent none repeat scroll 0 0;
     border: medium none;
     font-family: Arial;
@@ -547,7 +742,7 @@ td.req_lev {
     text-align: center;
     width: auto !important;
 }
-#evaluaciones .niveles img {
+#evaluaciones .niveles img, #evaluaciones_profesor .niveles img, #evaluaciones_titular .niveles img {
     display: none;
 }
 .level_asigned {
@@ -563,7 +758,7 @@ td.req_lev {
     right: 0;
     top: 0;
 }
-#evaluaciones .rubricas input[type="radio"], #actividades .rubricas input[type="radio"] {
+#evaluaciones .rubricas input[type="radio"], #evaluaciones_profesor .rubricas input[type="radio"], #evaluaciones_titular .rubricas input[type="radio"], #actividades .rubricas input[type="radio"], #actividades_titular .rubricas input[type="radio"] {
     cursor: pointer;
     height: 100%;
     margin: 0;
@@ -602,7 +797,7 @@ td.req_lev {
 .niveles > table tr td:last-child {
     border-right: 0 none;
 }
-#evaluaciones .details{
+#evaluaciones .details, #evaluaciones_profesor .details, #evaluaciones_titular .details {
     display: inline-block;
 }
 .reporte {
@@ -614,14 +809,18 @@ td.req_lev {
     display: inline-flex;
 }
 .tabla_grafica {
-    margin: auto 0;
+    margin: auto;
+    max-width: 500px;
+}
+#myChart {
+    margin: auto;
 }
 .tabla_grafica td {
     border: none !important;
     padding-left: 20px;
     padding-top: 10px;
 }
-#imgcanplc {
+#imgcanplc, #myReport {
     display: none;
 }
 #button_cmd {
@@ -637,6 +836,11 @@ td.req_lev {
 }
 .home {
     cursor: pointer;
+    font-size: 16px;
+    transition: font-size 0.2s;
+}
+.home:hover {
+    font-size: 18px;
 }
 #login_view {
     background-image: url("/img/competere_bg.jpg");
@@ -666,9 +870,11 @@ table th:first-child {
 table th:last-child {
     border-radius: 0 10px 0 0;
 }
-
+.radar-legend li:before {
+    content: "" !important;
+}
 .chart-legend {
-    position: relative;
+    margin: auto;
 }
 .chart-legend li span{
     display: inline-block;
@@ -676,13 +882,10 @@ table th:last-child {
     height: 12px;
     margin-right: 5px;
 }
-.radar-legend {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 200px;
+#actividades .rubricas td {
+    padding: 10px;
 }
-.radar-legend li {
+#js-legend ul li {
     list-style: outside none none;
     text-align: left;
 }
@@ -700,4 +903,15 @@ table th:last-child {
 }
 .hide {
     display: none !important;
+}
+.imgabtn {
+    border-radius: 30px;
+    transition: box-shadow 0.2s; 
+}
+.imgabtn:hover {
+    cursor: pointer;
+    -webkit-box-shadow: 0px 0px 10px 1px rgba(63, 81, 181, 0.5);
+    -moz-box-shadow: 0px 0px 10px 1px rgba(63, 81, 181, 0.5);
+    box-shadow: 0px 0px 10px 1px rgba(63, 81, 181, 0.5);
+    transform: scale(1.1);
 }

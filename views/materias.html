@@ -4,7 +4,7 @@
 		<div class="instrucciones">
 			<div ng-show="!add1 && !edit">Ingrese la información de las materias o asignaturas en las que se realizarán los procesos de evaluación de desempeño. Ingrese los datos correspondientes y el periodo en el que se realizará dicha evaluación.</div>
 		</div>
-		<div class="admin_control first">
+		<div class="admin_control">
 			<div class="panel_list">
 				<b>Edición de materias</b><br>
 				<div class="buttons_list">
@@ -18,7 +18,7 @@
 					</select>
 				</div>
 			</div>
-			<form ng-submit="form1()"  ng-disabled="!edit1">
+			<form ng-submit="form1()"  ng-disabled="!edit1" ng-show="edit1">
 				<div class="details">
 					<p>Clave:</p><input type="text" ng-model="modeloLista1.mat_clave_materia" ng-readonly="!add1" ng-disabled="!add1" maxlength="10" required>
 					<p>Nombre:</p><input type="text" ng-model="modeloLista1.mat_nombre_materia" ng-readonly="!edit1" required>
@@ -30,14 +30,14 @@
 						<option value="Profesional">Profesional</option>
 						<option value="Preparatoria">Preparatoria</option>
 					</select>
-					<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1"><img src="/img/accept.png"></button>
-					<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit1" ng-click="cancel1()"><img src="/img/cancel.png"></button>
+					<button class="btnsave" title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1">Guardar</button>
+					<button class="btncancel" type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit1" ng-click="cancel1()">Cancelar</button>
 				</div>
 			</form>
 		</div>
-		<div class="admin_control">
-			<button title="Remover materia a periodo" alt="Remover materia a periodo" ng-disabled="!modeloLista2 || !program_selected || !period_selected || !year_selected" ng-click="delSubject1()"><img src="/img/arrow_left.png"></button>
-			<button title="Agregar materia a periodo" alt="Agregar materia a periodo" ng-disabled="!modeloLista1 || !program_selected || !period_selected || !year_selected" ng-click="addSubject1()"><img src="/img/arrow_right.png"></button>
+		<div class="panel_inline details">
+			<img class="imgabtn" title="Remover materia a periodo" alt="Remover materia a periodo" src="/img/upa.png" ng-click="delSubject1()" ng-disabled="!modeloLista2">
+			<img class="imgabtn" title="Agregar materia a periodo" alt="Agregar materia a periodo" ng-disabled="!modeloLista1 || !program_selected || !period_selected || !year_selected" ng-click="addSubject1()" src="/img/dna.png">
 		</div>
 		<div class="admin_control">
 			<div class="details" ng-disabled="add2">
@@ -56,8 +56,6 @@
 					<option value=""></option>
 				</select>
 			</div>
-		</div>
-		<div class="admin_control">
 			<div class="panel_list">
 				<form ng-submit="form2()">					
 					<div class="list">
@@ -65,8 +63,8 @@
 							<option value=""></option>
 						</select>
 						<div class="details">
-							<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!add2"><img src="/img/accept.png"></button>
-							<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="!add2" ng-click="cancel2()"><img src="/img/cancel.png"></button>
+							<button class="btnsave" title="Guardar cambios" alt="Guardar cambios" ng-show="add2">Guardar</button>
+							<button class="btncancel" type="button" title="Cancelar" alt="Cancelar" ng-show="add2" ng-click="cancel2()">Cancelar</button>
 						</div>
 					</div>
 				</form>

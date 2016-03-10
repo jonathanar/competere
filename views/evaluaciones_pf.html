@@ -1,4 +1,4 @@
-<div id="evaluaciones" ng-controller="evaluaciones">
+<div id="evaluaciones_profesor" ng-controller="evaluaciones_profesor" class="menu">
 	<h2>Evaluaciones</h2>
 	<div>
 		<div class="instrucciones">
@@ -8,19 +8,19 @@
 			<div class="inlflx">
 				<div>
 					<b ng-disabled="edit1">Programa</b>
-					<select class="sublistaDetalle" ng-model="program_selected" ng-options="item.value as item.text for item in program" ng-change="update1()" ng-disabled="edit1">
+					<select class="sublistaDetalle" ng-model="program_selected" ng-options="item as item.text for item in program" ng-change="update1()" ng-disabled="edit1">
 						<option value=""></option>
 					</select>
 				</div>
 				<div>
 					<b ng-disabled="edit1">Periodo</b>
-					<select class="sublistaDetalle" ng-model="period_selected" ng-options="item.value as item.text for item in period" ng-change="update1()" ng-disabled="edit1">
+					<select class="sublistaDetalle" ng-model="period_selected" ng-options="item as item.text for item in period" ng-change="update1()" ng-disabled="edit1">
 						<option value=""></option>
 					</select>
 				</div>
 				<div>
 					<b ng-disabled="edit1">Año</b>
-					<select class="sublistaDetalle" ng-model="year_selected" ng-options="('Y'+item) as item for item in year" ng-change="update1()" ng-disabled="edit1">
+					<select class="sublistaDetalle" ng-model="year_selected" ng-options="item as item for item in year" ng-change="update1()" ng-disabled="edit1">
 						<option value=""></option>
 					</select>
 				</div>
@@ -35,29 +35,19 @@
 		<div class="panel_inline" ng-show="modeloLista1">
 			<div class="admin_control">
 				<div class="panel_list">
-					<b>Profesores</b><br><br>
-					<div class="list">
-						<select id="lista2" size="15" ng-model="modeloLista2" ng-options="(item.pro_nombre + ' ' + item.pro_apellido_paterno + ' ' + item.pro_apellido_materno) for item in lista2 track by item.pro_nomina" ng-disabled="!modeloLista1" ng-change="update3()">
-							<option value="">Todos los profesores</option>
-						</select>
-					</div>
-				</div>
-			</div>
-			<div class="admin_control">
-				<div class="panel_list">
 					<b>Alumnos</b><br><br>
 					<div class="list">
-						<select id="lista3" size="15" ng-model="modeloLista3" ng-options="(item.alu_nombre + ' ' + item.alu_apellido_paterno + ' ' + item.alu_apellido_materno) for item in lista3 track by item.alu_matricula" ng-disabled="!modeloLista1" ng-change="update4()">
+						<select id="lista2" size="15" ng-model="modeloLista2" ng-options="(item.alu_nombre + ' ' + item.alu_apellido_paterno + ' ' + item.alu_apellido_materno) for item in lista2 track by item.alu_matricula" ng-disabled="!modeloLista1" ng-change="update3()">
 							<option value=""></option>
 						</select>
 					</div>
 				</div>
 			</div>
-			<div class="admin_control" ng-show="modeloLista3">
+			<div class="admin_control" ng-show="modeloLista2">
 				<div class="panel_list">
 					<b>Actividades</b><br><br>
-					<div ng-repeat="activity in lista6">
-						{{activity.act_nombre}}<div class="btnrad"><button class="btnsave" title="Comenzar evaluación" alt="Comenzar evaluación">Comenzar evaluación</button><input type="radio" ng-model="$parent.clavact" value={{activity.act_clave_actividad}} ng-change="update5(activity.act_nombre)"></div>
+					<div ng-repeat="activity in lista3">
+						{{activity.act_nombre}}<div class="btnrad"><button class="btnsave" title="Comenzar evaluación" alt="Comenzar evaluación">Comenzar evaluación</button><input type="radio" ng-model="$parent.clavact" value={{activity.act_clave_actividad}} ng-change="update4(activity.act_nombre)"></div>
 					</div>
 				</div>
 			</div>
@@ -89,7 +79,7 @@
 					<div><b>Rubrica para la actividad {{nombreact}}</b><br></div>
 					<div class="details">
 						<div class="top_margen">
-							<table ng-show="lista7" class="rubricas">
+							<table ng-show="lista4" class="rubricas">
 								<tr>
 									<th><b>Clave subcompetencia</b></th>
 									<th><b>Descripción subcompetencia</b></th>
@@ -98,7 +88,7 @@
 									<th><b>Evaluación</b></th>
 									<th><b>Comentario</b></th>
 								</tr>
-								<tr ng-repeat="subcom in lista7">
+								<tr ng-repeat="subcom in lista4">
 									<td><p align="center">{{subcom.rows[0].niv_clave_subcompetencia}}</p></td>
 									<td><p align="center">{{subcom.description}}</p></td>
 
@@ -109,12 +99,12 @@
 								</tr>
 							</table>
 							<div class="panel_inline inline_flex">
-								<table ng-show="lista7" class="tabla_grafica">
+								<table ng-show="lista4" class="tabla_grafica">
 									<tr>
 										<td><b>Clave subcompetencia</b></td>
 										<td><b>Descripción subcompetencia</b></td>
 									</tr>
-									<tr ng-repeat="subcom in lista7">
+									<tr ng-repeat="subcom in lista4">
 										<td>{{subcom.rows[0].niv_clave_subcompetencia}}</td>
 										<td>{{subcom.description}}</td>
 									</tr>

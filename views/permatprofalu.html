@@ -1,46 +1,56 @@
 <div id="matprofalu" ng-controller="matprofalu">
-	<h2>Materias, profesores y alumnos</h2>
+	<h2>Asignación</h2>
 	<div>
 		<div class="instrucciones">
-			<div ng-show="!add1 && !edit">A continuación se muestra una lista de todos los alumnos registrados en el sistema. Para dar de alta, de clic en 'Añadir alumno' en la parte superior de la lista. Para editar o borrar un alumno, primero seleccionar un alumno de la lista y dar clic en 'Editar alumno' o 'Borrar alumno' en la parte superior de la lista.</div>
+			<div ng-show="!add1 && !edit">En esta sección se entrelazará la información de materia- profesor- alumnos para organizar y registrar el proceso de evaluación de desempeño.</div>
 		</div>
 		<div class="panel_inline">
-			<div class="details">
-				<b  ng-disabled="!update">Programa</b>
-				<select class="sublistaDetalle" ng-model="program_selected" ng-options="item.value as item.text for item in program" ng-change="update1()" ng-disabled="!update">
-					<option value=""></option>
-				</select>
-				<b  ng-disabled="!update">Periodo</b>
-				<select class="sublistaDetalle" ng-model="period_selected" ng-options="item.value as item.text for item in period" ng-change="update1()" ng-disabled="!update">
-					<option value=""></option>
-				</select>
-				<b  ng-disabled="!update">Año</b>
-				<select class="sublistaDetalle" ng-model="year_selected" ng-options="('Y'+item) as item for item in year" ng-change="update1()" ng-disabled="!update">
-					<option value=""></option>
-				</select>
-				<b ng-disabled="!lista1 || !update">Materia</b>
-				<select id="lista1" ng-model="modeloLista1" ng-options="(addSpaces(item.mat_clave_materia) + item.mat_nombre_materia) for item in lista1 track by item.mat_clave_materia" ng-change="update2()" ng-disabled="!lista1 || !update">
-					<option value=""></option>
-				</select>
+			<div class="inlflx">
+				<div>
+					<b ng-disabled="!update">Programa</b>
+					<select class="sublistaDetalle" ng-model="program_selected" ng-options="item.value as item.text for item in program" ng-change="update1()" ng-disabled="!update">
+						<option value=""></option>
+					</select>
+				</div>
+				<div>
+					<b ng-disabled="!update">Periodo</b>
+					<select class="sublistaDetalle" ng-model="period_selected" ng-options="item.value as item.text for item in period" ng-change="update1()" ng-disabled="!update">
+						<option value=""></option>
+					</select>
+				</div>
+				<div>
+					<b ng-disabled="!update">Año</b>
+					<select class="sublistaDetalle" ng-model="year_selected" ng-options="('Y'+item) as item for item in year" ng-change="update1()" ng-disabled="!update">
+						<option value=""></option>
+					</select>
+				</div>
+				<div ng-show="lista1 && update">
+					<b ng-disabled="!lista1 || !update">Materia</b>
+					<select id="lista1" ng-model="modeloLista1" ng-options="(addSpaces(item.mat_clave_materia) + item.mat_nombre_materia) for item in lista1 track by item.mat_clave_materia" ng-change="update2()" ng-disabled="!lista1 || !update">
+						<option value=""></option>
+					</select>
+				</div>
 			</div>
 		</div>
-		<form ng-submit="form1()" ng-disabled="!modeloLista1">
+		<form ng-submit="form1()" ng-disabled="!modeloLista1" ng-show="modeloLista1">
 			<div class="panel_inline">
 				<div class="admin_control">
 					<div class="panel_list">
 					<b>Listado de profesores</b>			
+					<p>Buscar: <input type="text" search list="lista2"></p>
+					<span id="srrslt1" class="srrslt">&nbsp;</span>
 						<div class="list">
 							<select id="lista2" size="15" ng-model="modeloLista2" ng-options="(addSpaces(item.pro_nomina) + item.pro_nombre +' '+ item.pro_apellido_paterno +' '+ item.pro_apellido_materno) for item in lista2 track by item.pro_nomina" ng-disabled="!modeloLista1">
 								<option value=""></option>
 							</select>
 						</div>
 					</div>
-					<div class="button_panel">
-						<button type="button" title="Remover materia a periodo" alt="Remover materia a periodo" ng-disabled="!modeloLista3" ng-click="delSubject1()"><img src="/img/arrow_left.png" ng-disabled="!modeloLista1"></button>
-						<button type="button" title="Agregar materia a periodo" alt="Agregar materia a periodo" ng-disabled="!modeloLista2" ng-click="addSubject1()"><img src="/img/arrow_right.png" ng-disabled="!modeloLista1"></button>
+					<div class="button_panel"><br><br><br><br>
+						<img class="imgabtn" title="Remover profesor del curso" alt="Remover profesor del curso" src="/img/lta.png" ng-click="delSubject1()">
+						<img class="imgabtn" title="Añadir profesor al curso" alt="Añadir profesor al curso" src="/img/rta.png" ng-click="addSubject1()">
 					</div>
-					<div class="panel_list">
-					<b>Profesores asignados al curso</b>			
+					<div class="panel_list"><br><br><br>
+					<b>Profesores asignados al curso</b><br><br>			
 						<div class="list">
 							<select id="lista3" size="15" ng-model="modeloLista3" ng-options="(addSpaces(item.pro_nomina) + item.pro_nombre +' '+ item.pro_apellido_paterno +' '+ item.pro_apellido_materno) for item in lista3 track by item.pro_nomina" ng-change="update3()" ng-disabled="!modeloLista1">
 								<option value=""></option>
@@ -53,18 +63,20 @@
 				<div class="admin_control">
 					<div class="panel_list">
 						<b>Listado de alumnos</b>
+						<p>Buscar: <input type="text" search list="lista4"></p>
+						<span id="srrslt2" class="srrslt">&nbsp;</span>
 						<div class="list">
 							<select id="lista4" size="15" ng-model="modeloLista4" ng-options="(addSpaces(item.alu_matricula) + item.alu_nombre +' '+ item.alu_apellido_paterno +' '+ item.alu_apellido_materno) for item in lista4 track by item.alu_matricula" ng-disabled="!modeloLista1">
 								<option value=""></option>
 							</select>
 						</div>
 					</div>
-					<div class="button_panel">
-						<button type="button" title="Remover materia a periodo" alt="Remover materia a periodo" ng-disabled="!modeloLista5" ng-click="delSubject2()"><img src="/img/arrow_left.png" ng-disabled="!modeloLista1"></button>
-						<button type="button" title="Agregar materia a periodo" alt="Agregar materia a periodo" ng-disabled="!modeloLista4 || !modeloLista3" ng-click="addSubject2()" ng-disabled="!modeloLista1"><img src="/img/arrow_right.png"></button>
+					<div class="button_panel"><br><br><br><br>
+						<img class="imgabtn" title="Remover alumno del curso" alt="Remover alumno del curso" src="/img/lta.png" ng-click="delSubject2()">
+						<img class="imgabtn" title="Añadir alumno al curso" alt="Añadir alumno al curso" src="/img/rta.png" ng-click="addSubject2()">
 					</div>
-					<div class="panel_list">
-						<b>Alumnos asignados al curso</b>			
+					<div class="panel_list"><br><br><br>
+						<b>Alumnos asignados al curso</b><br><br>
 						<div class="list">
 							<select id="lista5" size="15" ng-model="modeloLista5" ng-options="(addSpaces(item.alu_matricula) + item.alu_nombre +' '+ item.alu_apellido_paterno +' '+ item.alu_apellido_materno) for item in lista5 track by item.alu_matricula" ng-disabled="!modeloLista1">
 								<option value=""></option>
@@ -74,8 +86,8 @@
 				</div>
 			</div>
 			<div class="panel_inline">
-				<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="update"><img src="/img/accept.png"></button>
-				<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="update" ng-click="cancel1()"><img src="/img/cancel.png"></button>
+				<button class="btnsave" title="Guardar cambios" alt="Guardar cambios" ng-disabled="update">Guardar</button>
+				<button class="btncancel" type="button" title="Cancelar" alt="Cancelar" ng-disabled="update" ng-click="cancel1()">Cancelar</button>
 			</div>
 		</form>
 	</div>
