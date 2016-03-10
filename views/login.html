@@ -1,0 +1,21 @@
+<div id="login_view" ng-controller="userLogin">
+	<div class="row inicio">
+		<div class="valign-center">
+			<div class="logos">
+				<img src="img/competere_logos.png">
+			</div>
+			<form id="box_login" ng-submit="loginSubmit()">
+				<div>
+					<p>INICIAR SESIÓN</p>
+					<input ng-model="user.usuario" type="text" name="usuario" placeholder="Usuario" required>
+					<input ng-model="user.contrasena" type="password" name="contrasena" placeholder="Contraseña"required>
+				</div>
+				<div>
+					<a ng-click="showAbout($event)"><b>Acerca de</b></a>
+					<hr>
+					<input type="submit" value="Entrar">
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

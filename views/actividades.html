@@ -1,0 +1,108 @@
+<div id="actividades" ng-controller="actividades">
+	<h2>Actividades</h2>
+	<div>
+		<div class="instrucciones">
+			<div ng-show="!add1 && !edit">A continuación se muestra una lista de todos los alumnos registrados en el sistema. Para dar de alta, de clic en 'Añadir alumno' en la parte superior de la lista. Para editar o borrar un alumno, primero seleccionar un alumno de la lista y dar clic en 'Editar alumno' o 'Borrar alumno' en la parte superior de la lista.</div>
+		</div>
+		<div class="panel_inline">
+			<div class="details">
+				<b  ng-disabled="edit1">Programa</b>
+				<select class="sublistaDetalle" ng-model="program_selected" ng-options="item.value as item.text for item in program" ng-change="update1()" ng-disabled="edit1">
+					<option value=""></option>
+				</select>
+				<b  ng-disabled="edit1">Periodo</b>
+				<select class="sublistaDetalle" ng-model="period_selected" ng-options="item.value as item.text for item in period" ng-change="update1()" ng-disabled="edit1">
+					<option value=""></option>
+				</select>
+				<b  ng-disabled="edit1">Año</b>
+				<select class="sublistaDetalle" ng-model="year_selected" ng-options="('Y'+item) as item for item in year" ng-change="update1()" ng-disabled="edit1">
+					<option value=""></option>
+				</select>
+				<b ng-disabled="!lista1 || edit1">Materia</b>
+				<select id="lista1" ng-model="modeloLista1" ng-options="(addSpaces(item.mat_clave_materia) + item.mat_nombre_materia) for item in lista1 track by item.mat_clave_materia" ng-change="update2()" ng-disabled="!lista1 || edit1">
+					<option value=""></option>
+				</select>
+			</div>
+		</div>
+		<div class="panel_inline" ng-show="modeloLista1">
+			<div class="admin_control">
+				<div class="panel_list">
+					<b>Actvidades para este curso</b><br>
+					<div class="buttons_list">
+						<button class="btn_add" alt="Añadir actividad" title="Añadir actividad" ng-click="edit1 = !edit1; add1 = !add1; addelem1()" ng-disabled="edit1 || !modeloLista1">+</button>
+						<button class="btn_edi" alt="Editar actividad" title="Editar actividad" ng-disabled="!modeloLista2 || edit1" ng-click="edit1 = !edit1"><img src="/img/edit.png"></button>
+						<button class="btn_del" alt="Borrar actividad" title="Borrar actividad" ng-disabled="!modeloLista2 || edit1" ng-click="delelem1()">x</button>
+					</div>
+					<div class="list">
+						<select id="lista2" size="15" ng-model="modeloLista2" ng-options="item as item.act_nombre for item in lista2 track by item.act_clave_actividad" ng-disabled="!modeloLista1" ng-change="update3()">
+							<option value=""></option>
+						</select>
+					</div>
+				</div>
+				<form ng-submit="form1()" ng-disabled="!edit1" ng-show="edit1">
+					<div class="details">
+						<p>Nombre:</p><input type="text" ng-model="modeloLista2.act_nombre" ng-readonly="!edit1" required>
+					</div>
+					<div class="panel_inline">
+						<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1"><img src="/img/accept.png"></button>
+						<button type="button" title="Cancelar" alt="Cancelar" ng-click="cancel1()" ng-disabled="!edit1"><img src="/img/cancel.png"></button>
+					</div>
+				</form>
+				<div class="admin_control" ng-show="modeloLista2 && modeloLista2.act_nombre && !edit1">
+					<div class="panel_list">
+						<b>Competencias</b><br><br><br>
+						<div class="list">
+							<select id="lista3" size="15" ng-model="modeloLista3" ng-options="(addSpaces(item.com_clave_competencia) + item.com_descripcion_competencia) for item in lista3 track by item.com_clave_competencia" ng-change="update4()">
+								<option value=""></option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="admin_control" ng-show="modeloLista2 && modeloLista2.act_nombre && !edit1">
+					<div class="panel_list">
+						<b>Subcompetencias</b><br><br><br>
+						<div class="list">
+							<select id="lista4" size="15" ng-model="modeloLista4" ng-options="(addSpaces(item.sco_clave_subcompetencia) + item.sco_descripcion_subcompetencia) for item in lista4 track by item.sco_clave_subcompetencia" ng-change="update5()">
+								<option value=""></option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel_inline" ng-show="add2">
+			<div class="admin_control">
+				<div class="panel_inline">
+					<button title="Agregar subcompetencia" alt="Agregar subcompetencia" ng-click="addelem2()">Agregar subcompetencia</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel_inline" ng-show="modeloLista2 && modeloLista2.act_nombre && !edit1">
+			<div class="admin_control">
+				<form ng-submit="form2()">
+					<b>Rubrica para la actividad {{modeloLista2.act_nombre}}</b><br>
+					<div class="top_margen">
+						<table ng-show="lista5" class="rubricas">
+							<tr>
+								<th><b>Clave subcompetencia</b></th>
+								<th><b>Descripción subcompetencia</b></th>
+								<th colspan="10"><b>Niveles</b></th>
+							</tr>
+							<tr ng-repeat="subcom in lista5">
+								<td><button type="button" title="Borrar subcompetencia" alt="Borrar subcompetencia" ng-click="delelem2(subcom)"><img src="/img/cancel.png"></button><p align="center">{{subcom.rows[0].niv_clave_subcompetencia}}</p></td>
+								<td><p align="center">{{subcom.description}}</p></td>
+								<td ng-repeat="niveles in subcom.rows" ng-class="{'req_lev': subcom.level_required==niveles.niv_nivel, 'perf': subcom.level_required!=niveles.niv_nivel}"><div class="perfil_experto"><span>Perfil Experto?</span><input type="radio" ng-model="$parent.niv_max" value={{niveles.niv_nivel}} ng-change="update6($parent.niv_max, subcom)"></div><textarea onkeyup="textAreaAdjust(this)" ng-model="niveles.niv_descripcion"></textarea></td>
+							</tr>
+						</table>
+						<div class="panel_inline">
+							<button title="Guardar cambios" alt="Guardar cambios"><img src="/img/accept.png"></button>
+							<button type="button" title="Cancelar" alt="Cancelar" ng-click="cancel2()"><img src="/img/cancel.png"></button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>

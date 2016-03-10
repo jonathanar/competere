@@ -1,0 +1,117 @@
+<div id="evaluaciones" ng-controller="evaluaciones">
+	<h2>Evaluaciones</h2>
+	<div>
+		<div class="instrucciones">
+			<div ng-show="!add1 && !edit">A continuación se muestra una lista de todos los alumnos registrados en el sistema. Para dar de alta, de clic en 'Añadir alumno' en la parte superior de la lista. Para editar o borrar un alumno, primero seleccionar un alumno de la lista y dar clic en 'Editar alumno' o 'Borrar alumno' en la parte superior de la lista.</div>
+		</div>
+		<div class="panel_inline">
+			<div class="details">
+				<b  ng-disabled="edit1">Programa</b>
+				<select class="sublistaDetalle" ng-model="program_selected" ng-options="item.value as item.text for item in program" ng-change="update1()" ng-disabled="edit1">
+					<option value=""></option>
+				</select>
+				<b  ng-disabled="edit1">Periodo</b>
+				<select class="sublistaDetalle" ng-model="period_selected" ng-options="item.value as item.text for item in period" ng-change="update1()" ng-disabled="edit1">
+					<option value=""></option>
+				</select>
+				<b  ng-disabled="edit1">Año</b>
+				<select class="sublistaDetalle" ng-model="year_selected" ng-options="('Y'+item) as item for item in year" ng-change="update1()" ng-disabled="edit1">
+					<option value=""></option>
+				</select>
+				<b ng-disabled="!lista1 || edit1">Materia</b>
+				<select id="lista1" ng-model="modeloLista1" ng-options="(addSpaces(item.mat_clave_materia) + item.mat_nombre_materia) for item in lista1 track by item.mat_clave_materia" ng-change="update2()" ng-disabled="!lista1 || edit1">
+					<option value=""></option>
+				</select>
+			</div>
+		</div>
+		<div class="panel_inline" ng-show="modeloLista1">
+			<div class="admin_control">
+				<div class="panel_list">
+					<b>Profesores</b><br><br>
+					<div class="list">
+						<select id="lista2" size="15" ng-model="modeloLista2" ng-options="(item.pro_nombre + ' ' + item.pro_apellido_paterno + ' ' + item.pro_apellido_materno) for item in lista2 track by item.pro_nomina" ng-disabled="!modeloLista1" ng-change="update3()">
+							<option value="">Todos los profesores</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="admin_control">
+				<div class="panel_list">
+					<b>Alumnos</b><br><br>
+					<div class="list">
+						<select id="lista3" size="15" ng-model="modeloLista3" ng-options="(item.alu_nombre + ' ' + item.alu_apellido_paterno + ' ' + item.alu_apellido_materno) for item in lista3 track by item.alu_matricula" ng-disabled="!modeloLista1" ng-change="update4()">
+							<option value=""></option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="admin_control" ng-show="modeloLista3">
+				<div class="panel_list">
+					<b>Actividades</b><br><br>
+					<div ng-repeat="activity in lista6">
+						{{activity.act_nombre}}<input type="radio" ng-model="$parent.clavact" value={{activity.act_clave_actividad}} ng-change="update5(activity.act_nombre)">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel_inline" ng-show="clavact.length">
+			<div class="admin_control">
+				<form ng-submit="form1()">
+					<b>Retroalimentacion</b><br>
+					<div class="details">
+						<div><b>Comentario</b></div>
+						<textarea ng-model="comentary" ng-trim="false" maxlength="250" required></textarea>
+						<span>{{250 - comentary.length}} caracteres restantes</span>
+					</div>
+					<div class="details">
+						<div><b>¿Cómo vas?</b></div>
+						<textarea ng-model="feedup" ng-trim="false" maxlength="250" required></textarea>
+						<span>{{250 - feedup.length}} caracteres restantes</span>
+					</div>
+					<div class="details">
+						<div><b>¿Cómo lo estás haciendo?</b></div>
+						<textarea ng-model="feedback" ng-trim="false" maxlength="250" required></textarea>
+						<span>{{250 - feedback.length}} caracteres restantes</span>
+					</div>
+					<div class="details">
+						<div><b>¿De que manera se conecta esta actividad con la siguiente?</b></div>
+						<textarea ng-model="feedforward" ng-trim="false" maxlength="250" required></textarea>
+						<span>{{250 - feedforward.length}} caracteres restantes</span>
+					</div>
+					<div><b>Rubrica para la actividad {{nombreact}}</b><br></div>
+					<div class="details">
+						<div class="top_margen">
+							<table ng-show="lista7" class="rubricas">
+								<tr>
+									<th><b>Clave subcompetencia</b></th>
+									<th><b>Descripción subcompetencia</b></th>
+									<th><b>Niveles</b></th>
+									<th><b>Perfil Experto</b></th>
+									<th><b>Evaluación</b></th>
+									<th><b>Comentario</b></th>
+								</tr>
+								<tr ng-repeat="subcom in lista7">
+									<td><p align="center">{{subcom.rows[0].niv_clave_subcompetencia}}</p></td>
+									<td><p align="center">{{subcom.description}}</p></td>
+
+									<td class="niveles"><table><tr><td ng-repeat="niveles in subcom.rows" ng-class="{'req_lev': subcom.level_required==niveles.niv_nivel, 'perf': subcom.level_required!=niveles.niv_nivel}"><div ng-class="{'level_asigned': subcom.level_assigned==niveles.niv_nivel}"><img src="/img/good.png"><input type="radio" ng-model="subcom.level_assigned" value={{niveles.niv_nivel}} ng-click="update6(subcom)"></div><p align="center">{{niveles.niv_descripcion}}</p></td></tr></table></td>
+									<td><p align="center">{{subcom.level_required}}</p></td>
+									<td><p align="center">{{subcom.level_assigned}}</p></td>
+									<td class="txtaedit"><img src="/img/edit.png"><textarea onkeyup="textAreaAdjust(this)" ng-model="subcom.comentary"></textarea></td>
+								</tr>
+							</table>
+							<div class="panel_inline">
+								<button title="Guardar cambios" alt="Guardar cambios"><img src="/img/accept.png"></button>
+								<button type="button" title="Cancelar" alt="Cancelar" ng-click="cancel1()"><img src="/img/cancel.png"></button>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+
+
+	</div>
+</div>
