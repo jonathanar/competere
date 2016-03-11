@@ -8,4 +8,8 @@ hola
 hola
 hola
 hola
+<<<<<<< HEAD
 hola
+=======
+hola
+>>>>>>> origin/master
