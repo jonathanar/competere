@@ -4,11 +4,8 @@ hola
 hola
 hola
 hola
-<<<<<<< HEAD
 hola
 hola
 hola
 hola
 hola
-=======
->>>>>>> origin/master
