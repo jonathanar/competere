@@ -529,11 +529,7 @@ app.get('/updatevaluations', function (req, res, next){
 	setTimeout(function(){
 		res.send(data);
 		next();
-<<<<<<< HEAD
 	},1000);	
-=======
-	});	
->>>>>>> origin/master
 });
 
 
