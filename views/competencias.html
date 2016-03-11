@@ -27,8 +27,8 @@
 						<option value=""></option>
 					</select>
 					<p>Competencia Fija: <input type="checkbox" ng-model="modeloLista1.com_fijo" ng-true-value="1" ng-false-value="0" ng-disabled="!edit1"></input></p>
-					<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1"><img src="/img/accept.png"></button>
-					<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit1" ng-click="cancel1()"><img src="/img/cancel.png"></button>
+					<button class="btnsave" title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit1">Guardar</button>
+					<button class="btncancel" type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit1" ng-click="cancel1()">Cancelar</button>
 				</div>
 			</form>
 		</div>
@@ -55,8 +55,8 @@
 					<select class="sublistaDetalle" ng-model="modeloLista2.sco_taxonomia" ng-options="item.index as item.value for item in taxonomia" ng-disabled="!edit2" required>
 						<option value=""></option>
 					</select>
-					<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit2"><img src="/img/accept.png"></button>
-					<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit2" ng-click="cancel2()"><img src="/img/cancel.png"></button>
+					<button class="btnsave" title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit2">Guardar</button>
+					<button class="btncancel" type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit2" ng-click="cancel2()">Cancelar</button>
 				</div>
 			</form>
 		</div>
@@ -66,7 +66,7 @@
 				<div class="buttons_list">
 					<button class="btn_add" alt="Añadir subcompetencia" title="Añadir subcompetencia" ng-click="edit3 = !edit3; add3 = !add3; addelem3()" ng-disabled="!modeloLista1 || edit3">+</button>
 					<button class="btn_edi" alt="Editar subcompetencia" title="Editar subcompetencia" ng-disabled="!modeloLista3 || edit3" ng-click="edit3 = !edit3"><img src="/img/edit.png"></button>
-					<button class="btn_del" alt="Borrar subcompetencia" title="Borrar subcompetencia" ng-disabled="!modeloLista3 || edit3" ng-click="delelem3($event)">x</button>
+					<button class="btn_del" alt="Borrar nivel. Para borrar todos los niveles mantenga presionada la tecla 'Ctrl' mientras da clic en aquí" title="Borrar nivel. Para borrar todos los niveles mantenga presionada la tecla 'Ctrl' mientras da clic en aquí" ng-disabled="!modeloLista3 || edit3" ng-click="delelem3($event)">x</button>
 				</div>
 				<div class="list">
 					<select id="lista3" size="15" ng-model="modeloLista3" ng-options="(addSpaces(item.niv_nivel) + item.niv_descripcion) for item in lista3 track by item.niv_nivel" ng-disabled="edit3">
@@ -78,8 +78,8 @@
 				<div class="details">
 					<p>Nivel:</p><input type="text" ng-model="modeloLista3.niv_nivel" ng-readonly="!add3" ng-disabled="!add3" maxlength="2" required>
 					<p>Descripción:</p><textarea rows="5" ng-model="modeloLista3.niv_descripcion" ng-readonly="!edit3" required></textarea>
-					<button title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit3"><img src="/img/accept.png"></button>
-					<button type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit3" ng-click="cancel3()"><img src="/img/cancel.png"></button>
+					<button class="btnsave" title="Guardar cambios" alt="Guardar cambios" ng-disabled="!edit3">Guardar</button>
+					<button class="btncancel" type="button" title="Cancelar" alt="Cancelar" ng-disabled="!edit3" ng-click="cancel3()">Cancelar</button>
 				</div>
 			</form>
 		</div>

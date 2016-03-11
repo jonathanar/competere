@@ -1,4 +1,4 @@
-<div id="actividades" ng-controller="actividades">
+<div id="actividades_titular" ng-controller="actividades_titular">
 	<h2>Actividades</h2>
 	<div>
 		<div class="instrucciones">
@@ -82,7 +82,7 @@
 		<div class="panel_inline" ng-show="add2">
 			<div class="admin_control">
 				<div class="panel_inline">
-					<button class="btnsave" title="Agregar subcompetencia" alt="Agregar subcompetencia" ng-click="addelem2()">Agregar subcompetencia</button>
+					<button title="Agregar subcompetencia" alt="Agregar subcompetencia" ng-click="addelem2()">Agregar subcompetencia</button>
 				</div>
 			</div>
 		</div>
@@ -90,7 +90,7 @@
 		<div class="panel_inline" ng-show="modeloLista2 && modeloLista2.act_nombre && !edit1">
 			<div class="admin_control">
 				<form ng-submit="form2()">
-					<b>Rúbrica para la actividad {{modeloLista2.act_nombre}}</b><br><br>
+					<b>Rubrica para la actividad {{modeloLista2.act_nombre}}</b><br>
 					<p align="left">La siguiente tabla muestra las subcompetencias que se estarán evaluando para esta actividad. tome en cuenta las siguientes indicaciones:</p>
 					<ul>
 						<li>Para agregar una subcompetencia a la rúbrica de la actividad seleccione una subcompetencia y de clic en el botón "Agregar subcompetencia".</li>
@@ -98,7 +98,6 @@
 						<li>Para declarar un nivel como perfil experto al pasar el cursor sobre el nivel aparecerá la siguiente imagen <img src="img/exprf.png"> si da clic en ella el nivel seleccionado será el nivel experto y su color sera distinto a las demás celdas.<br><b>Nota:</b> Solamente puede declarar un nivel perfil experto por subcompetencia.</li>
 						<li>Para eliminar una subcompetencia de la actividad de clic en la imagen <img src="/img/cancel.png"> que aparece en la parte superior a la clave de la subcompetencia en la tabla cuando pasa el cursor sobre la subcompetencia.</li>
 					</ul>
-					<div class="top_margen">
 						<table ng-show="lista5" class="rubricas">
 							<tr>
 								<th><b>Clave subcompetencia</b></th>
